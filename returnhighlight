@@ -1,0 +1,11 @@
+// Listen for messages from injected keyboard listener
+function returnHighlight(doc) {
+  const spans = doc.querySelectorAll("span");
+  console.log(spans);
+  spans.forEach(span => {
+    const bg = span.style.backgroundColor;
+    if (bg && bg !== "transparent" && bg !== "") {
+      console.log(span.textContent);
+    }
+  });
+}

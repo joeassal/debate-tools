@@ -1,0 +1,29 @@
+{
+    "manifest_version": 3,
+    "name": "Copy Logger",
+    "version": "1.0",
+    "host_permissions": ["https://docs.google.com/document/d/*"],
+    "permissions": [
+    "clipboardRead",
+    "clipboardWrite",
+    "debugger",
+    "tabs",
+    "activeTab",
+    "scripting",
+    "sidePanel"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://docs.google.com/document/d/*"],
+            "js": ["content.js"],
+            "run_at": "document_idle",
+            "all_frames": true
+        }
+    ],
+    "side_panel": {
+        "default_path": "sidepanel.html"
+    }
+}
