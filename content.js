@@ -136,8 +136,38 @@ function condense() {
     return container.innerHTML;
   })
 }
-function readMode() {
+async function readMode() {
+  startCB = await checkClipboard();
+  startCB2 = await navigator.clipboard.read();
+  await new Promise(resolve => {
+      chrome.runtime.sendMessage({ action: "a", useShift: false, useAlt: false  }, resolve);
+  });
+  await new Promise(resolve => {
+      chrome.runtime.sendMessage({ action: "c", useShift: false, useAlt: false  }, resolve);
+  });
+  if(startCB==await checkClipboard()){ return }
 
+  newCB = await checkClipboard();
+  //parsing logic
+  const container = document.createElement("div");
+  container.innerHTML = newCB;
+  //end parsing logic
+
+  //give back old clipboard
+  await navigator.clipboard.write(startCB2);
+
+  // Keep only h4 blocks and highlighted spans
+  const allElements = Array.from(container.querySelectorAll("*"));
+  allElements.forEach(el => {
+    const isH4 = el.tagName === "H4";
+    const isHighlightedSpan = el.tagName === "SPAN" && el.style.backgroundColor && el.style.backgroundColor !== "transparent";
+    
+    if (!isH4 && !isHighlightedSpan) {
+      el.remove();
+    }
+  });
+
+  return container.innerHTML;
 }
 //end hotkeys.js
 
@@ -151,6 +181,9 @@ async function onKeyDown(e) {
 
 function sidebarButtonClick(actionName) {
   if (actions[actionName]) {
+    if(actionName==="Readmode"){
+    
+    }
     actions[actionName]();
   }
 }
@@ -213,6 +246,7 @@ function injectSidebar() {
       <button class="side-btn" data-action="Highlight">Highlight (F10)</button>
       <button class="side-btn" data-action="Clear">Clear (F12)</button>
       <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
+      <button class="side-btn" data-action="Readmode">Read Mode</button>
     </div>
     <style>
       .side-btn {
@@ -306,7 +340,16 @@ function injectSidebar() {
       }
 
       const actionName = btn.getAttribute("data-action");
-      sidebarButtonClick(actionName);
+
+      //special handling funcitons
+      if(actionName==="Readmode"){
+        const readContent = await actions["Readmode"]();
+        const readWindow = window.open("", "DebateReadMode", "width=900,height=900");
+        readWindow.document.write(readContent);
+        console.log(readContent);
+      } else {
+        sidebarButtonClick(actionName);
+      }
     });
   });
 }
