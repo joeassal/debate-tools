@@ -27,72 +27,73 @@ async function ensureDebuggerAttached(tabId) {
     }
 }
 
-// Your updated copy function
-/**
- * Generic helper to simulate a Ctrl/Cmd + Key combination
- * @param {number} tabId - The ID of the tab
- * @param {string} char - The character to press (e.g., 'v', 'u', 'c')
- */
-async function sendKeyCombo(tabId, char) {
+async function sendUniversalShortcut(tabId, char, useShift = false, useAlt = false) {
     const target = { tabId };
-    
-    // 1. Ensure attached
     await ensureDebuggerAttached(tabId);
 
-    // 2. Setup keys
     const isMac = navigator.userAgent.toUpperCase().includes('MAC');
-    const modifierBit = isMac ? 8 : 2;      // Command (Mac) or Control (Windows/Linux)
-    const modifierKey = isMac ? 91 : 17;    // Meta key or Control key
-    
-    // Convert character to KeyCode
-    const keyCode = char.toUpperCase().charCodeAt(0);
-    const lowerChar = char.toLowerCase();
+    const modKey = isMac ? 91 : 17; // Cmd or Ctrl
+    const altKey = 18;
+    const shiftKey = 16;
 
-    // Press Modifier
-    await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", {
-        type: "keyDown",
-        modifiers: modifierBit,
-        windowsVirtualKeyCode: modifierKey,
-        nativeVirtualKeyCode: modifierKey,
+    // 1. Calculate Bitmask correctly using bitwise OR
+    let modifierBit = isMac ? 8 : 2; 
+    if (useShift) modifierBit |= 4; // Use bitwise OR to set bits
+    if (useAlt)   modifierBit |= 1;
+
+    // 2. Handle KeyCode
+    const keyCode = (char === '\\') ? 220 : char.toUpperCase().charCodeAt(0);
+
+    // --- SEQUENCE START ---
+    
+    // Press Modifiers
+    await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", { 
+        type: "keyDown", modifiers: modifierBit, windowsVirtualKeyCode: modKey 
     });
+    
+    if (useAlt) {
+        await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", { 
+            type: "keyDown", modifiers: modifierBit & ~1, windowsVirtualKeyCode: altKey 
+        });
+    }
+    
+    if (useShift) {
+        await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", { 
+            type: "keyDown", modifiers: modifierBit & ~4, windowsVirtualKeyCode: shiftKey 
+        });
+    }
 
     // Press Key
+    // Note: We use the uppercase char for unmodifiedText if shift is on
     await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", {
         type: "keyDown",
         modifiers: modifierBit,
         windowsVirtualKeyCode: keyCode,
-        nativeVirtualKeyCode: keyCode,
-        text: lowerChar,
-        unmodifiedText: lowerChar
+        text: "", 
+        unmodifiedText: "" 
     });
 
-    // Release Key
-    await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", {
-        type: "keyUp",
-        modifiers: modifierBit,
-        windowsVirtualKeyCode: keyCode,
+    // --- RELEASE (REVERSE ORDER) ---
+    await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", { 
+        type: "keyUp", modifiers: modifierBit, windowsVirtualKeyCode: keyCode 
     });
 
-    // Release Modifier
-    await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", {
-        type: "keyUp",
-        modifiers: 0,
-        windowsVirtualKeyCode: modifierKey,
+    if (useShift) {
+        await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", { 
+            type: "keyUp", modifiers: modifierBit & ~4, windowsVirtualKeyCode: shiftKey 
+        });
+    }
+
+    if (useAlt) {
+        await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", { 
+            type: "keyUp", modifiers: modifierBit & ~1, windowsVirtualKeyCode: altKey 
+        });
+    }
+
+    await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", { 
+        type: "keyUp", modifiers: 0, windowsVirtualKeyCode: modKey 
     });
 }
-// Listen for messages from content script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "simulateCopy") {
-        sendKeyCombo(sender.tab.id, 'c').then(() => sendResponse());
-    }
-    else if (message.action === "simulatePaste") {
-        sendKeyCombo(sender.tab.id, 'v').then(() => sendResponse());
-    }
-    else if (message.action === "underline") {
-        sendKeyCombo(sender.tab.id, 'u').then(() => sendResponse());
-    }
-    else if (message.action === "selectAll") {
-        sendKeyCombo(sender.tab.id, 'a').then(() => sendResponse());
-    }
-    return true; // Tell Chrome we'll send response asynchronously
+    sendUniversalShortcut(sender.tab.id, message.action, message.useShift, message.useAlt).then(() => sendResponse());
 });

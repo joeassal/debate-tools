@@ -1,22 +1,20 @@
 settings = {
-  "highlightColor": "blue",
+  "highlightColor": "yellow",
 }
 actions = {
-  "Paste": async () => await cleanPaste(),
-  "Condense": () => condense(),
-  "Pocket": () => addBlock("<h1 style='text-decoration: underline;font-size: 34.66px; text-align: center;'><a style='display: inline-block;'>[ ", " ]</a></h1>"),
-  "Hat": () => addBlock("<h2 style='text-align: center; font-size: 29.33px; text-decoration: underline;'><a style='display: inline-block;'>", "</a></h2>"),
-  "Block": () => addBlock("<h3 style='font-size: 21.33px; text-align: center;'><a style='display: inline-block;'>", "</a></h3>"),
-  "Tag": () => addBlock("<h4 style='font-size: 17.33px; style='display: inline-block;'>","</h4>"),
-  "Cite": () => addBlock("<p style='font-size: 17.33px; font-weight: bold; display: inline-block;'>", "</p>"),
-  "Underline": () => chrome.runtime.sendMessage({ action: "underline" }),
-  "Highlight": () => {
-    // loop through spans, if all is highlighted, remove it, else add highlight
-    addMarkdown(`<style>*{background-color: ${settings.highlightColor};}</style>`)
-  },
-  "Clear": () => changeProperty("style", "line-height: 1.5;font-size: 14.33px; font-weight: normal; color: black; text-decoration: none; text-align: left; display: inline-block;")
+  "Paste": async () => await chrome.runtime.sendMessage({ action: "V", useShift: true, useAlt: false }),
+  "Condense": async () => await condense(),
+  "Pocket": async () => await chrome.runtime.sendMessage({ action: "1", useAlt: true }),
+  "Hat": async () => await chrome.runtime.sendMessage({ action: "2", useAlt: true }),
+  "Block": async () => await chrome.runtime.sendMessage({ action: "3", useAlt: true }),
+  "Tag": async () => await chrome.runtime.sendMessage({ action: "4", useAlt: true }),
+  "Cite": async () => await changeProperty("style", "font-size: 17.33px; font-weight: bold; display: inline-block;"),
+  "Underline": async () => await chrome.runtime.sendMessage({ action: "u", useShift: false, useAlt: false  }),
+  "Highlight": async () => await highlight(),
+  "Clear": async () => {await chrome.runtime.sendMessage({ action: "0", useAlt: true }); await chrome.runtime.sendMessage({ action: "\\", useShift: false, useAlt: false });},
+  "Readmode":  async () => await readMode()
 }
-keybinds = {
+  keybinds = {
   "F2": "Paste",
   "F3": "Condense",
   "F4": "Pocket",
@@ -48,7 +46,7 @@ async function modifySelection(e){
     startCB = await checkClipboard();
     startCB2 = await navigator.clipboard.read();
     await new Promise(resolve => {
-        chrome.runtime.sendMessage({ action: "simulateCopy" }, resolve);
+        chrome.runtime.sendMessage({ action: "c", useShift: false, useAlt: false  }, resolve);
     });
     if(startCB==await checkClipboard()){ return }
 
@@ -66,8 +64,11 @@ async function modifySelection(e){
     ]);
     /// simulate paste
     await new Promise(resolve => {
-        chrome.runtime.sendMessage({ action: "simulatePaste" }, resolve);
+        chrome.runtime.sendMessage({ action: "v", useShift: false, useAlt: false  }, resolve);
     });
+
+    // Wait for paste to complete
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     //give back old clipboard
     await navigator.clipboard.write(startCB2);
@@ -75,7 +76,7 @@ async function modifySelection(e){
 
 function addBlock(blockstart, blockend) {
   console.log('addblock');
-  modifySelection(async (container) => {
+  return modifySelection(async (container) => {
     const spans = container.querySelectorAll("span");
     spans.forEach(span => {
         span.innerHTML = blockstart + span.innerHTML + blockend;
@@ -84,7 +85,7 @@ function addBlock(blockstart, blockend) {
   })
 }
 function changeProperty(property, value) {
-  modifySelection(async (container) => {
+  return modifySelection(async (container) => {
     const spans = container.querySelectorAll("*");
     spans.forEach(span => {
       span.setAttribute(property, value);
@@ -92,13 +93,36 @@ function changeProperty(property, value) {
     return container.innerHTML;
   })
 }
-function addMarkdown(text) {
-  modifySelection(async (container) => {
-    return text + container.innerHTML;
-  })
+function highlight() {
+  return modifySelection(async (container) => {
+    let hText = "";
+
+    // Check what's highlighted
+    container.querySelectorAll("span").forEach(span => {
+      const bg = span.style.backgroundColor;
+
+      if (bg && bg !== "transparent") {
+        hText += span.textContent;
+      }
+    });
+
+    // If ENTIRE selection is highlighted, toggle OFF
+    if (hText.trim() === container.textContent.trim()) {
+      container.querySelectorAll("span").forEach(span => {
+        span.style.backgroundColor = "transparent";
+      });
+    } else {
+      // Otherwise highlight EVERYTHING
+      container.querySelectorAll("span").forEach(span => {
+        span.style.backgroundColor = settings.highlightColor;
+      });
+    }
+
+    return container.innerHTML;
+  });
 }
 function condense() {
-  modifySelection(async (container) => {
+  return modifySelection(async (container) => {
     const children = container.querySelectorAll('*');
     children.forEach(el => {
         el.style.display = 'inline';
@@ -112,23 +136,16 @@ function condense() {
     return container.innerHTML;
   })
 }
-async function cleanPaste() {
-  const text = await navigator.clipboard.readText();
-  const blob = new Blob([text], { type: "text/plain" });
-  await navigator.clipboard.write([
-    new ClipboardItem({ "text/plain": blob })
-  ]);
-  await new Promise(resolve => {
-        chrome.runtime.sendMessage({ action: "simulatePaste" }, resolve);
-  });
+function readMode() {
+
 }
 //end hotkeys.js
 
-function onKeyDown(e) {
+async function onKeyDown(e) {
   if (keybinds[e.key]!==undefined) {
     e.preventDefault();
     e.stopImmediatePropagation();
-    actions[keybinds[e.key]]();
+    await actions[keybinds[e.key]]();
   }
 }
 
@@ -154,7 +171,11 @@ function attachToDocsEditor() {
  * Injects a sidebar directly into the Google Docs UI
  */
 function injectSidebar() {
-  if (document.getElementById("doc-extension-sidebar")) return;
+  if (document.getElementById("doc-extension-sidebar")) {
+    // Sidebar already exists, just show it
+    document.getElementById("doc-extension-sidebar").style.display = "flex";
+    return;
+  }
 
   // 1. Create the Sidebar Element
   const sidebar = document.createElement("div");
@@ -176,10 +197,11 @@ function injectSidebar() {
 
   // 2. Add Content & Styling
   sidebar.innerHTML = /*html*/`
-    <div style="padding: 15px; background: #fd4444; color: white; font-weight: bold;">
-      Debate Tools
+    <div style="padding: 15px; background: #fd4444; color: white; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+      <span>Debate Tools</span>
+      <button id="close-sidebar" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">✕</button>
     </div>
-    <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+    <div style="padding: 10px; display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px;">
     <button class="side-btn" data-action="Paste">Paste (F2)</button>
       <button class="side-btn" data-action="Condense">Condense (F3)</button>
       <button class="side-btn" data-action="Pocket">Pocket (F4)</button>
@@ -194,6 +216,7 @@ function injectSidebar() {
     </div>
     <style>
       .side-btn {
+        flex: 1 1 calc(50% - 4px);
         padding: 4px 6px;
         cursor: pointer;
         border: 1px solid #dadce0;
@@ -209,6 +232,56 @@ function injectSidebar() {
   `;
 
   document.body.appendChild(sidebar);
+
+  // Create resize handle
+  const resizeHandle = document.createElement("div");
+  resizeHandle.id = "sidebar-resize-handle";
+  resizeHandle.style.cssText = `
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    cursor: col-resize;
+    background: transparent;
+    z-index: 10001;
+  `;
+  sidebar.appendChild(resizeHandle);
+
+  // Add close button functionality
+  document.getElementById("close-sidebar").addEventListener("click", () => {
+    sidebar.style.display = "none";
+  });
+
+  // Add resize functionality
+  let isResizing = false;
+  resizeHandle.addEventListener("mousedown", (e) => {
+    isResizing = true;
+    document.body.style.userSelect = "none";
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isResizing) return;
+
+    const maxWidth = window.innerWidth * 0.5; // 50% of page width
+    const minWidth = 280; // Minimum width
+    const newWidth = window.innerWidth - e.clientX;
+
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      sidebar.style.width = newWidth + "px";
+      
+      // Update the main editor margin
+      const mainEditor = document.querySelector(".docs-main-container") || document.querySelector("#docs-chrome");
+      if (mainEditor) {
+        mainEditor.style.marginRight = newWidth + "px";
+      }
+    }
+  });
+
+  document.addEventListener("mouseup", () => {
+    isResizing = false;
+    document.body.style.userSelect = "auto";
+  });
 
   // 3. Shift the Google Docs Editor UI
   // This class targets the main workspace wrapper in Google Docs
@@ -237,6 +310,46 @@ function injectSidebar() {
     });
   });
 }
+
+/**
+ * Creates a floating toggle button for the sidebar
+ */
+function createSidebarToggleButton() {
+  if (document.getElementById("sidebar-toggle-btn")) return;
+
+  const toggleBtn = document.createElement("button");
+  toggleBtn.id = "sidebar-toggle-btn";
+  toggleBtn.textContent = "Tools";
+  toggleBtn.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 15px;
+    background: #fd4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 999999;
+    font-weight: bold;
+    font-size: 12px;
+    transition: background 0.2s;
+  `;
+
+  toggleBtn.addEventListener("mouseover", () => {
+    toggleBtn.style.background = "#e63939";
+  });
+
+  toggleBtn.addEventListener("mouseout", () => {
+    toggleBtn.style.background = "#fd4444";
+  });
+
+  toggleBtn.addEventListener("click", () => {
+    injectSidebar();
+  });
+
+  document.body.appendChild(toggleBtn);
+}
 /**
  * Watch for the Google Docs editor to load
  */
@@ -245,6 +358,7 @@ const initObserver = new MutationObserver(() => {
   if (document.querySelector(".docs-texteventtarget-iframe")) {
     injectSidebar();
     attachToDocsEditor(); // Your existing function to listen for keys
+    createSidebarToggleButton(); // Create the toggle button
     initObserver.disconnect();
   }
 });
