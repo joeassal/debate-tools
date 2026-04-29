@@ -12,9 +12,11 @@ actions = {
   "Underline": async () => await chrome.runtime.sendMessage({ action: "u", useShift: false, useAlt: false  }),
   "Highlight": async () => await highlight(),
   "Clear": async () => {await chrome.runtime.sendMessage({ action: "0", useAlt: true }); await chrome.runtime.sendMessage({ action: "\\", useShift: false, useAlt: false });},
-  "Readmode":  async () => await readMode()
+  "Readmode": async () => await readMode(),
+  "Importdocx": async () => ImportDocX(),
+  "Exportdocx": async () => ExportDocX(),
 }
-  keybinds = {
+keybinds = {
   "F2": "Paste",
   "F3": "Condense",
   "F4": "Pocket",
@@ -42,36 +44,36 @@ async function checkClipboard() {
   }
   return "";
 }
-async function modifySelection(e){
-    startCB = await checkClipboard();
-    startCB2 = await navigator.clipboard.read();
-    await new Promise(resolve => {
-        chrome.runtime.sendMessage({ action: "c", useShift: false, useAlt: false  }, resolve);
-    });
-    if(startCB==await checkClipboard()){ return }
+async function modifySelection(e) {
+  startCB = await checkClipboard();
+  startCB2 = await navigator.clipboard.read();
+  await new Promise(resolve => {
+    chrome.runtime.sendMessage({ action: "c", useShift: false, useAlt: false }, resolve);
+  });
+  if (startCB == await checkClipboard()) { return }
 
-    newCB = await checkClipboard();
-    //parsing logic
-    newCB = newCB.replace(/\bid=(["']).*?\1/g, 'id=""');
-    const container = document.createElement("div");
-    container.innerHTML = newCB;
-    //end parsing logic
+  newCB = await checkClipboard();
+  //parsing logic
+  newCB = newCB.replace(/\bid=(["']).*?\1/g, 'id=""');
+  const container = document.createElement("div");
+  container.innerHTML = newCB;
+  //end parsing logic
 
-    // write to clipboard
-    const blob = new Blob([await e(container)], { type: "text/html" });
-    await navigator.clipboard.write([
-      new ClipboardItem({ "text/html": blob })
-    ]);
-    /// simulate paste
-    await new Promise(resolve => {
-        chrome.runtime.sendMessage({ action: "v", useShift: false, useAlt: false  }, resolve);
-    });
+  // write to clipboard
+  const blob = new Blob([await e(container)], { type: "text/html" });
+  await navigator.clipboard.write([
+    new ClipboardItem({ "text/html": blob })
+  ]);
+  /// simulate paste
+  await new Promise(resolve => {
+    chrome.runtime.sendMessage({ action: "v", useShift: false, useAlt: false }, resolve);
+  });
 
-    // Wait for paste to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+  // Wait for paste to complete
+  await new Promise(resolve => setTimeout(resolve, 100));
 
-    //give back old clipboard
-    await navigator.clipboard.write(startCB2);
+  //give back old clipboard
+  await navigator.clipboard.write(startCB2);
 }
 
 function addBlock(blockstart, blockend) {
@@ -79,7 +81,7 @@ function addBlock(blockstart, blockend) {
   return modifySelection(async (container) => {
     const spans = container.querySelectorAll("span");
     spans.forEach(span => {
-        span.innerHTML = blockstart + span.innerHTML + blockend;
+      span.innerHTML = blockstart + span.innerHTML + blockend;
     });
     return container.innerHTML;
   })
@@ -125,9 +127,9 @@ function condense() {
   return modifySelection(async (container) => {
     const children = container.querySelectorAll('*');
     children.forEach(el => {
-        el.style.display = 'inline';
-        el.style.margin = '0';
-        el.style.padding = '0';
+      el.style.display = 'inline';
+      el.style.margin = '0';
+      el.style.padding = '0';
     });
 
     // 2. Force the container to stay on one line
@@ -140,12 +142,12 @@ async function readMode() {
   startCB = await checkClipboard();
   startCB2 = await navigator.clipboard.read();
   await new Promise(resolve => {
-      chrome.runtime.sendMessage({ action: "a", useShift: false, useAlt: false  }, resolve);
+    chrome.runtime.sendMessage({ action: "a", useShift: false, useAlt: false }, resolve);
   });
   await new Promise(resolve => {
-      chrome.runtime.sendMessage({ action: "c", useShift: false, useAlt: false  }, resolve);
+    chrome.runtime.sendMessage({ action: "c", useShift: false, useAlt: false }, resolve);
   });
-  if(startCB==await checkClipboard()){ return }
+  if (startCB == await checkClipboard()) { return }
 
   newCB = await checkClipboard();
   //parsing logic
@@ -156,19 +158,59 @@ async function readMode() {
   //give back old clipboard
   await navigator.clipboard.write(startCB2);
 
-  // Keep only h4 blocks and highlighted spans
-  const allElements = Array.from(container.querySelectorAll("*"));
-  allElements.forEach(el => {
-    const isH4 = el.tagName === "H4";
-    const isHighlightedSpan = el.tagName === "SPAN" && el.style.backgroundColor && el.style.backgroundColor !== "transparent";
-    
-    if (!isH4 && !isHighlightedSpan) {
-      el.remove();
-    }
-  });
 
-  return container.innerHTML;
+  // actual logic u care about
+  let keepContent = "";
+  let pgs = container.querySelector('b');
+  for(const pg of pgs.children){
+    let inntertext=pg.innerText;
+    isCite=(inntertext.includes("http") || inntertext.includes("www"))
+
+    //card logic if it is a card
+    let isCard = false;
+    let contingentKC="";
+
+    //loop thru spans to find highlight or small text
+    pg.querySelectorAll('span').forEach(span => {
+      if(span.style.fontSize && parseFloat(span.style.fontSize) >=13 && span.style.fontWeight > 400){
+        contingentKC+=span.outerHTML + " ";
+        return;
+      }
+      if(isCite && span.style.fontWeight && span.style.fontWeight > 400){
+        contingentKC+=span.outerHTML + " ";
+      }
+      const bg = span.style.backgroundColor;
+      const size = span.style.fontSize;
+      if (bg && bg !== "transparent") {
+        isCard = true;
+        contingentKC += span.outerHTML + " ";
+      }
+      if(size && parseFloat(size) <= 8){
+        isCard = true;
+      }
+    });
+    if (isCard || isCite) {
+      keepContent+=contingentKC;
+    } else {
+      keepContent+=pg.outerHTML;
+    }
+  }
+
+  return keepContent
 }
+
+function ImportDocX() {
+  console.log("ImportDocX called");
+  window.open("https://docs.google.com/document/create", "_blank");
+}
+function ExportDocX() {
+  const originalUrl = window.location.href;
+  const editIndex = originalUrl.indexOf("/edit");
+  const exportUrl = originalUrl.substring(0, editIndex) + "/export?format=docx";
+  window.location.href = exportUrl;
+}
+
+
 //end hotkeys.js
 
 async function onKeyDown(e) {
@@ -181,9 +223,6 @@ async function onKeyDown(e) {
 
 function sidebarButtonClick(actionName) {
   if (actions[actionName]) {
-    if(actionName==="Readmode"){
-    
-    }
     actions[actionName]();
   }
 }
@@ -246,6 +285,8 @@ function injectSidebar() {
       <button class="side-btn" data-action="Highlight">Highlight (F10)</button>
       <button class="side-btn" data-action="Clear">Clear (F12)</button>
       <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
+      <button class="side-btn" data-action="Importdocx">Ez Import DocX</button>
+      <button class="side-btn" data-action="Exportdocx">Ez Export DocX</button>
       <button class="side-btn" data-action="Readmode">Read Mode</button>
     </div>
     <style>
@@ -345,8 +386,62 @@ function injectSidebar() {
       if(actionName==="Readmode"){
         const readContent = await actions["Readmode"]();
         const readWindow = window.open("", "DebateReadMode", "width=900,height=900");
-        readWindow.document.write(readContent);
-        console.log(readContent);
+        readWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body {
+                width: 900px;
+                margin: 20px auto;
+                font-family: times new roman, serif;
+                overflow: hidden;
+              }
+              #page-container {
+                height: 100vh;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+              }
+              #content-area {
+                flex: 1;
+                overflow-y: auto;
+              }
+              #page-info {
+                text-align: center;
+                padding: 10px;
+                border-top: 1px solid #ccc;
+                background: #f5f5f5;
+              }
+            </style>
+          </head>
+          <body>
+            <div id="page-container">
+              <div id="content-area">${readContent}</div>
+              <div id="page-info">Page <span id="current-page">1</span></div>
+            </div>
+          </body>
+          </html>
+        `);
+        readWindow.focus();
+
+        // Page navigation logic
+        let currentPage = 1;
+        const contentArea = readWindow.document.getElementById("content-area");
+        const pageInfo = readWindow.document.getElementById("page-info");
+        
+        readWindow.addEventListener("keydown", (event) => {
+          if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+            contentArea.scrollBy({ top: contentArea.clientHeight, behavior: 'smooth' });
+            currentPage++;
+            pageInfo.innerHTML = `Page <span id="current-page">${currentPage}</span>`;
+          }
+          if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+            contentArea.scrollBy({ top: -contentArea.clientHeight, behavior: 'smooth' });
+            currentPage = (currentPage > 1) ? currentPage - 1 : 1;
+            pageInfo.innerHTML = `Page <span id="current-page">${currentPage}</span>`;
+          }
+        });
       } else {
         sidebarButtonClick(actionName);
       }
