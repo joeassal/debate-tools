@@ -94,6 +94,25 @@ async function sendUniversalShortcut(tabId, char, useShift = false, useAlt = fal
         type: "keyUp", modifiers: 0, windowsVirtualKeyCode: modKey 
     });
 }
+
+// importScripts('https://cdn.jsdelivr.net/npm/docshift@latest/dist/docshift.min.js');
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    sendUniversalShortcut(sender.tab.id, message.action, message.useShift, message.useAlt).then(() => sendResponse());
+    if(message.action == "importDocX") {
+        docshift.toHtml(message.file).then(html => {
+            sendResponse({ html: html });
+        }).catch(err => {
+            sendResponse({ error: err.message });
+        });
+    }
+    if(message.action == "tabThenPaste") {
+        chrome.tabs.create({ url: "https://docs.google.com/document/create" }, (tab) => {
+            chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+                if (changeInfo.status === 'complete' && tab.url.includes('/document/d/')) {
+                    sendUniversalShortcut(tabId, "v", false, false).then(() => sendResponse());
+                }
+            });
+        });
+    } else {
+        sendUniversalShortcut(sender.tab.id, message.action, message.useShift, message.useAlt).then(() => sendResponse());
+    }
 });

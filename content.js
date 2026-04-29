@@ -199,9 +199,38 @@ async function readMode() {
   return keepContent
 }
 
-function ImportDocX() {
+async function ImportDocX() {
   console.log("ImportDocX called");
-  window.open("https://docs.google.com/document/create", "_blank");
+  try {
+    const [fileHandle] = await window.showOpenFilePicker({
+      types: [{
+        description: 'Word Document',
+        accept: {
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
+        }
+      }]
+    });
+    const file = await fileHandle.getFile();
+    await new Promise(resolve => {
+      chrome.runtime.sendMessage({ action: "importDocX", file: file }, async (response) => {
+        if (response.error) {
+          console.error("Error converting DOCX:", response.error);
+        } else {
+          const html = response.html;
+          const blob = new Blob([html], { type: "text/html" });
+          await navigator.clipboard.write([
+            new ClipboardItem({ "text/html": blob })
+          ]);
+        }
+        await new Promise(resolve => {
+          chrome.runtime.sendMessage({ action: "tabThenPaste" }, resolve);
+        });
+      });
+    });
+  } catch (err) {
+    // User cancelled the picker
+    console.log("Picker closed or failed", err);
+  }
 }
 function ExportDocX() {
   const originalUrl = window.location.href;
@@ -442,7 +471,8 @@ function injectSidebar() {
             pageInfo.innerHTML = `Page <span id="current-page">${currentPage}</span>`;
           }
         });
-      } else {
+      }
+      else {
         sidebarButtonClick(actionName);
       }
     });
