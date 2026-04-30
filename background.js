@@ -125,10 +125,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     const listener = (tabId, changeInfo, tab) => {
                         if (changeInfo.status === 'complete' && tab.url.includes('/document/d/')) {
                             chrome.tabs.onUpdated.removeListener(listener);
-                            
-                            sendUniversalShortcut(tabId, "v", false, false).then(() => {
+                            // Add delay to let the editor fully load
+                            setTimeout(async () => {
+                                await sendUniversalShortcut(tabId, "v", false, false);
                                 resolve();
-                            });
+                            }, 2000); // 2 second delay
                         }
                     };
                     chrome.tabs.onUpdated.addListener(listener);

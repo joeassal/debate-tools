@@ -2,19 +2,24 @@ settings = {
   "highlightColor": "yellow",
 }
 actions = {
-  "Paste": async () => clickDocButton(":73"),
+  "Paste": async () => await chrome.runtime.sendMessage({ action: "v", useAlt: true, useShift: false }),
   "Condense": async () => await condense(),
   "Pocket": async () => await chrome.runtime.sendMessage({ action: "1", useAlt: true }),
   "Hat": async () => await chrome.runtime.sendMessage({ action: "2", useAlt: true }),
   "Block": async () => await chrome.runtime.sendMessage({ action: "3", useAlt: true }),
   "Tag": async () => await chrome.runtime.sendMessage({ action: "4", useAlt: true }),
-  "Cite": async () => await changeProperty("style", "font-size: 17.33px; font-weight: bold; display: inline-block;"),
+  "Cite": async () => {
+    clickDocButton("clearFormattingButton")
+    clickDocButton("fontSizeIncrement")
+    clickDocButton("fontSizeIncrement")
+    clickDocButton("boldButton");
+  },
   "Underline": () => clickDocButton("underlineButton"),
-  "Highlight": async () => clickDocButton("docs-material-colorpalette-cell-104"),
-  "Clear": async () => clickDocButton("clearFormattingButton"),
+  "Highlight": async () => {clickDocButton("bgColorButton");clickDocButton("bgColorButton");clickDocButton("docs-material-colorpalette-cell-104")},
+  "Clear": async () => {clickDocButton("clearFormattingButton"); await chrome.runtime.sendMessage({ action: "0", useAlt: true })},
   "Readmode": async () => await readMode(),
-  "Importdocx": async () => await ImportDocX(),
-  "Exportdocx": async () => awaitExportDocX(),
+  "Importdocx": async () => await ImportDocX(), // need2do
+  "Exportdocx": () => ExportDocX(),
 }
 keybinds = {
   "F2": "Paste",
@@ -97,11 +102,7 @@ async function modifySelection(e) {
   await new Promise(resolve => {
     chrome.runtime.sendMessage({ action: "v", useShift: false, useAlt: false }, resolve);
   });
-  await new Promise(resolve => {
-    chrome.runtime.sendMessage({ action: "Backspace", useShift: false, useAlt: false }, resolve);
-  });
   await new Promise(resolve => setTimeout(resolve, 100));
-
   // Wait for paste to complete
 
   //give back old clipboard
@@ -147,18 +148,53 @@ function highlight() {
 }
 function condense() {
   return modifySelection(async (container) => {
-    const children = container.querySelectorAll('*');
-    children.forEach(el => {
+    // 1. Find all block elements that represent paragraph breaks
+    const blocks = container.querySelectorAll('p, div, br');
+    
+    blocks.forEach(el => {
+      // Create a pilcrow span to insert
+      const pilcrow = document.createElement('span');
+      pilcrow.innerText = ' ¶ '; 
+      pilcrow.style.color = '#777'; // Often dimmed in Verbatim
+      
+      // Insert the pilcrow at the end of the block before flattening
+      if (el.tagName !== 'BR') {
+        el.appendChild(pilcrow);
+      } else {
+        el.parentNode.insertBefore(pilcrow, el);
+        el.remove(); // Remove actual <br> tags
+      }
+    });
+
+    // 2. Flatten all elements to inline
+    const allElements = container.querySelectorAll('*');
+    allElements.forEach(el => {
       el.style.display = 'inline';
       el.style.margin = '0';
       el.style.padding = '0';
     });
 
-    // 2. Force the container to stay on one line
-    container.style.whiteSpace = 'nowrap';
-    container.style.display = 'inline-block';
+    // 3. Clean up the whitespace string
+    let html = container.innerHTML;
+
+    // Remove actual line breaks and tabs
+    html = html.replace(/[\n\r\t]+/g, ' ');
+
+    // Replace multiple spaces (and potential multiple pilcrows) with a single one
+    html = html.replace(/\s+/g, ' ');
+    
+    // Optional: Clean up double pilcrows if the source had empty <p> tags
+    html = html.replace(/¶\s*¶/g, '¶');
+
+    container.innerHTML = html.trim();
+    
+    // Ensure the container itself wraps
+    container.style.display = 'block';
+    container.style.whiteSpace = 'normal';
+    container.style.lineHeight = '1.1'; // Standard condensed spacing
+
     return container.innerHTML;
-  })
+  });
 }
 async function readMode() {
   startCB = await checkClipboard();
@@ -237,8 +273,8 @@ async function ImportDocX() {
     await navigator.clipboard.write([
       new ClipboardItem({ "text/html": blob })
     ]);
-    await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: "tabThenPaste", useShift: false, useAlt: false }, resolve);
+    await new Promise(resolve => {
+      chrome.runtime.sendMessage({ action: "tabThenPaste" }, resolve);
     });
   } catch (err) {
     // User cancelled the picker
@@ -538,18 +574,8 @@ const initObserver = new MutationObserver(() => {
     injectSidebar();
     attachToDocsEditor(); // Your existing function to listen for keys
     createSidebarToggleButton(); // Create the toggle button
-    clickDocButton("bgColorButton");clickDocButton("bgColorButton");
     initObserver.disconnect();
   }
 });
 
 initObserver.observe(document.body, { childList: true, subtree: true });
-
-
-// messagers
-function handleRuntimeMessage(message, sender, sendResponse) {
-  if (message.action === "focusEditor") {
-    document.querySelector('.docs-texteventtarget-iframe').contentDocument.focus();
-  }
-  sendResponse({ received: true });
-}
