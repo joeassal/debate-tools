@@ -125,6 +125,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     const listener = (tabId, changeInfo, tab) => {
                         if (changeInfo.status === 'complete' && tab.url.includes('/document/d/')) {
                             chrome.tabs.onUpdated.removeListener(listener);
+                            
                             sendUniversalShortcut(tabId, "v", false, false).then(() => {
                                 resolve();
                             });

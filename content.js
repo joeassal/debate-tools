@@ -1,4 +1,3 @@
-setTimeout(() => {clickDocButton("bgColorButton");clickDocButton("bgColorButton");}, 3000);
 settings = {
   "highlightColor": "yellow",
 }
@@ -57,33 +56,6 @@ function clickDocButton(buttonId){
       })
     );
   }
-}
-function clickButton(buttonEl){
-  console.log(buttonEl)
-  if(!buttonEl){return}
-  buttonEl.dispatchEvent(
-    new MouseEvent("mousedown", {
-      bubbles: true,
-      cancelable: true,
-      view: window
-    })
-  );
-
-  buttonEl.dispatchEvent(
-    new MouseEvent("mouseup", {
-      bubbles: true,
-      cancelable: true,
-      view: window
-    })
-  );
-
-  buttonEl.dispatchEvent(
-    new MouseEvent("click", {
-      bubbles: true,
-      cancelable: true,
-      view: window
-    })
-  );
 }
 
 async function checkClipboard() {
@@ -314,9 +286,7 @@ function attachToDocsEditor() {
     }, true); // Use 'true' for capture phase to beat Google's own scripts
   }
 }
-/**
- * Injects a sidebar directly into the Google Docs UI
- */
+
 function injectSidebar() {
   if (document.getElementById("doc-extension-sidebar")) {
     // Sidebar already exists, just show it
@@ -524,9 +494,7 @@ function injectSidebar() {
     });
   });
 }
-/**
- * Creates a floating toggle button for the sidebar
- */
+
 function createSidebarToggleButton() {
   if (document.getElementById("sidebar-toggle-btn")) return;
 
@@ -563,17 +531,25 @@ function createSidebarToggleButton() {
 
   document.body.appendChild(toggleBtn);
 }
-/**
- * Watch for the Google Docs editor to load
- */
+
 const initObserver = new MutationObserver(() => {
   // Wait for the main container to exist before injecting
   if (document.querySelector(".docs-texteventtarget-iframe")) {
     injectSidebar();
     attachToDocsEditor(); // Your existing function to listen for keys
     createSidebarToggleButton(); // Create the toggle button
+    clickDocButton("bgColorButton");clickDocButton("bgColorButton");
     initObserver.disconnect();
   }
 });
 
 initObserver.observe(document.body, { childList: true, subtree: true });
+
+
+// messagers
+function handleRuntimeMessage(message, sender, sendResponse) {
+  if (message.action === "focusEditor") {
+    document.querySelector('.docs-texteventtarget-iframe').contentDocument.focus();
+  }
+  sendResponse({ received: true });
+}
