@@ -28,6 +28,7 @@ async function ensureDebuggerAttached(tabId) {
 }
 
 async function sendUniversalShortcut(tabId, char, useShift = false, useAlt = false) {
+
     const target = { tabId };
     await ensureDebuggerAttached(tabId);
 
@@ -42,6 +43,21 @@ async function sendUniversalShortcut(tabId, char, useShift = false, useAlt = fal
     if (useAlt)   modifierBit |= 1;
 
     // 2. Handle KeyCode
+    if (char === "Backspace") {
+        await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", {
+            type: "keyDown",
+            windowsVirtualKeyCode: 8,
+            modifiers: 0
+        });
+
+        await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", {
+            type: "keyUp",
+            windowsVirtualKeyCode: 8,
+            modifiers: 0
+        });
+
+        return;
+    }
     const keyCode = (char === '\\') ? 220 : char.toUpperCase().charCodeAt(0);
 
     // --- SEQUENCE START ---
@@ -95,24 +111,37 @@ async function sendUniversalShortcut(tabId, char, useShift = false, useAlt = fal
     });
 }
 
-// importScripts('https://cdn.jsdelivr.net/npm/docshift@latest/dist/docshift.min.js');
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if(message.action == "importDocX") {
-        docshift.toHtml(message.file).then(html => {
-            sendResponse({ html: html });
-        }).catch(err => {
-            sendResponse({ error: err.message });
-        });
-    }
-    if(message.action == "tabThenPaste") {
-        chrome.tabs.create({ url: "https://docs.google.com/document/create" }, (tab) => {
-            chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-                if (changeInfo.status === 'complete' && tab.url.includes('/document/d/')) {
-                    sendUniversalShortcut(tabId, "v", false, false).then(() => sendResponse());
-                }
-            });
-        });
-    } else {
-        sendUniversalShortcut(sender.tab.id, message.action, message.useShift, message.useAlt).then(() => sendResponse());
-    }
+    console.log("Received message in background:", message);
+    
+    (async () => {
+        try {
+            if(message.action == "tabThenPaste") {
+                const newTab = await new Promise((resolve) => {
+                    chrome.tabs.create({ url: "https://docs.google.com/document/create" }, resolve);
+                });
+                
+                await new Promise((resolve) => {
+                    const listener = (tabId, changeInfo, tab) => {
+                        if (changeInfo.status === 'complete' && tab.url.includes('/document/d/')) {
+                            chrome.tabs.onUpdated.removeListener(listener);
+                            sendUniversalShortcut(tabId, "v", false, false).then(() => {
+                                resolve();
+                            });
+                        }
+                    };
+                    chrome.tabs.onUpdated.addListener(listener);
+                });
+                sendResponse({ success: true });
+            } else {
+                await sendUniversalShortcut(sender.tab.id, message.action, message.useShift, message.useAlt);
+                sendResponse({ success: true });
+            }
+        } catch (error) {
+            console.error("Error in message listener:", error);
+            sendResponse({ error: error.message });
+        }
+    })();
+    
+    return true; // Keep the channel open for async response
 });

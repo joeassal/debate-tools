@@ -1,20 +1,21 @@
+setTimeout(() => {clickDocButton("bgColorButton");clickDocButton("bgColorButton");}, 3000);
 settings = {
   "highlightColor": "yellow",
 }
 actions = {
-  "Paste": async () => await chrome.runtime.sendMessage({ action: "V", useShift: true, useAlt: false }),
+  "Paste": async () => clickDocButton(":73"),
   "Condense": async () => await condense(),
   "Pocket": async () => await chrome.runtime.sendMessage({ action: "1", useAlt: true }),
   "Hat": async () => await chrome.runtime.sendMessage({ action: "2", useAlt: true }),
   "Block": async () => await chrome.runtime.sendMessage({ action: "3", useAlt: true }),
   "Tag": async () => await chrome.runtime.sendMessage({ action: "4", useAlt: true }),
   "Cite": async () => await changeProperty("style", "font-size: 17.33px; font-weight: bold; display: inline-block;"),
-  "Underline": async () => await chrome.runtime.sendMessage({ action: "u", useShift: false, useAlt: false  }),
-  "Highlight": async () => await highlight(),
-  "Clear": async () => {await chrome.runtime.sendMessage({ action: "0", useAlt: true }); await chrome.runtime.sendMessage({ action: "\\", useShift: false, useAlt: false });},
+  "Underline": () => clickDocButton("underlineButton"),
+  "Highlight": async () => clickDocButton("docs-material-colorpalette-cell-104"),
+  "Clear": async () => clickDocButton("clearFormattingButton"),
   "Readmode": async () => await readMode(),
-  "Importdocx": async () => ImportDocX(),
-  "Exportdocx": async () => ExportDocX(),
+  "Importdocx": async () => await ImportDocX(),
+  "Exportdocx": async () => awaitExportDocX(),
 }
 keybinds = {
   "F2": "Paste",
@@ -27,6 +28,62 @@ keybinds = {
   "F9": "Underline",
   "F10": "Highlight",
   "F12": "Clear"
+}
+function clickDocButton(buttonId){
+  const buttonEl = document.getElementById(buttonId);
+  console.log(buttonEl)
+  if (buttonEl) {
+    buttonEl.dispatchEvent(
+      new MouseEvent("mousedown", {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      })
+    );
+
+    buttonEl.dispatchEvent(
+      new MouseEvent("mouseup", {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      })
+    );
+
+    buttonEl.dispatchEvent(
+      new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      })
+    );
+  }
+}
+function clickButton(buttonEl){
+  console.log(buttonEl)
+  if(!buttonEl){return}
+  buttonEl.dispatchEvent(
+    new MouseEvent("mousedown", {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    })
+  );
+
+  buttonEl.dispatchEvent(
+    new MouseEvent("mouseup", {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    })
+  );
+
+  buttonEl.dispatchEvent(
+    new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    })
+  );
 }
 
 async function checkClipboard() {
@@ -68,24 +125,17 @@ async function modifySelection(e) {
   await new Promise(resolve => {
     chrome.runtime.sendMessage({ action: "v", useShift: false, useAlt: false }, resolve);
   });
+  await new Promise(resolve => {
+    chrome.runtime.sendMessage({ action: "Backspace", useShift: false, useAlt: false }, resolve);
+  });
+  await new Promise(resolve => setTimeout(resolve, 100));
 
   // Wait for paste to complete
-  await new Promise(resolve => setTimeout(resolve, 100));
 
   //give back old clipboard
   await navigator.clipboard.write(startCB2);
 }
 
-function addBlock(blockstart, blockend) {
-  console.log('addblock');
-  return modifySelection(async (container) => {
-    const spans = container.querySelectorAll("span");
-    spans.forEach(span => {
-      span.innerHTML = blockstart + span.innerHTML + blockend;
-    });
-    return container.innerHTML;
-  })
-}
 function changeProperty(property, value) {
   return modifySelection(async (container) => {
     const spans = container.querySelectorAll("*");
@@ -198,7 +248,6 @@ async function readMode() {
 
   return keepContent
 }
-
 async function ImportDocX() {
   console.log("ImportDocX called");
   try {
@@ -211,21 +260,13 @@ async function ImportDocX() {
       }]
     });
     const file = await fileHandle.getFile();
-    await new Promise(resolve => {
-      chrome.runtime.sendMessage({ action: "importDocX", file: file }, async (response) => {
-        if (response.error) {
-          console.error("Error converting DOCX:", response.error);
-        } else {
-          const html = response.html;
-          const blob = new Blob([html], { type: "text/html" });
-          await navigator.clipboard.write([
-            new ClipboardItem({ "text/html": blob })
-          ]);
-        }
-        await new Promise(resolve => {
-          chrome.runtime.sendMessage({ action: "tabThenPaste" }, resolve);
-        });
-      });
+    const html = await docshift.toHtml(file);
+    const blob = new Blob([html], { type: "text/html" });
+    await navigator.clipboard.write([
+      new ClipboardItem({ "text/html": blob })
+    ]);
+    await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ action: "tabThenPaste", useShift: false, useAlt: false }, resolve);
     });
   } catch (err) {
     // User cancelled the picker
@@ -250,11 +291,16 @@ async function onKeyDown(e) {
   }
 }
 
-function sidebarButtonClick(actionName) {
+async function sidebarButtonClick(actionName) {
   if (actions[actionName]) {
-    actions[actionName]();
+    await actions[actionName]();
   }
 }
+
+
+
+
+/// Attach stuff, sidebar stuff below
 
 // stuff you dont care about
 function attachToDocsEditor() {
@@ -314,8 +360,8 @@ function injectSidebar() {
       <button class="side-btn" data-action="Highlight">Highlight (F10)</button>
       <button class="side-btn" data-action="Clear">Clear (F12)</button>
       <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
-      <button class="side-btn" data-action="Importdocx">Ez Import DocX</button>
-      <button class="side-btn" data-action="Exportdocx">Ez Export DocX</button>
+      <button class="side-btn" data-action="Importdocx">Open DocX</button>
+      <button class="side-btn" data-action="Exportdocx">Export DocX</button>
       <button class="side-btn" data-action="Readmode">Read Mode</button>
     </div>
     <style>
@@ -478,7 +524,6 @@ function injectSidebar() {
     });
   });
 }
-
 /**
  * Creates a floating toggle button for the sidebar
  */
