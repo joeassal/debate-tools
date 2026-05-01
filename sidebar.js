@@ -1,6 +1,6 @@
 (function (global) {
   const DebateTools = global.DebateTools || {};
-
+  
   function getMainEditor() {
     return document.querySelector(".docs-main-container") || document.querySelector("#docs-chrome");
   }
@@ -73,6 +73,10 @@
     readWindow.focus();
     attachReadModeNavigation(readWindow);
   }
+  async function openSpeechDocsWindow() {
+    const speechWindow = window.open("https://docs.new", "SpeechDoc", "width=700px,height=900px");
+    speechWindow.focus();
+  }
 
   function attachSidebarResize(sidebar, resizeHandle) {
     let isResizing = false;
@@ -115,7 +119,8 @@
 
         if (actionName === "Readmode") {
           await openReadModeWindow();
-        } else {
+        }
+        else {
           await DebateTools.runAction(actionName);
         }
       });
@@ -166,8 +171,10 @@
         <button class="side-btn" data-action="Importdocx">Open DocX</button>
         <button class="side-btn" data-action="Exportdocx">Export DocX</button>
         <button class="side-btn" data-action="Readmode">Read Mode</button>
-        <button class="side-btn" data-action="Timer">Timer</button>
         <button id="flow-btn" class="side-btn" data-action="Flow">Flow</button>
+        <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
+        <button class="side-btn" data-action="NewSpeechDoc">Create Speech Doc</button>
+        <button class="side-btn" data-action="SendSpeechDoc">Send to Speech Doc</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <div id="folder-tree-host"></div>
       </div>

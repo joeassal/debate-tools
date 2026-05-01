@@ -27,6 +27,8 @@
     Readmode: async () => await DebateTools.readMode(),
     Importdocx: async () => await DebateTools.ImportDocX(),
     Exportdocx: () => DebateTools.ExportDocX(),
+    SendSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "sendSpeechDoc" }, (response) => {if(response && !response.success) { alert(response.message); }}),
+    NewSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "newSpeechDoc" }, (response) => {if(response && !response.success) { alert(response.message); }}),
   };
 
   DebateTools.keybinds = {
