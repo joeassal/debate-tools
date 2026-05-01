@@ -59,18 +59,11 @@
   };
   DebateTools.pasteHTML = async function pasteHTML(html) {
     if (html) {
-      const plainTextEl = document.createElement("div");
-      plainTextEl.innerHTML = html;
-
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "text/html": new Blob([html], { type: "text/html" }),
-          "text/plain": new Blob([plainTextEl.textContent || ""], { type: "text/plain" }),
-        }),
-      ]);
+      console.log("pasting ", html);
+      const blob = new Blob([html], { type: "text/html" });
+      await navigator.clipboard.write([new ClipboardItem({ "text/html": blob })]);
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
-
     await new Promise((resolve) => {
       chrome.runtime.sendMessage({ action: "v", useShift: false, useAlt: false }, resolve);
     });
@@ -147,7 +140,7 @@
 
       blocks.forEach((el) => {
         const pilcrow = document.createElement("span");
-        pilcrow.innerText = " Â¶ ";
+        pilcrow.innerText = " ¶ ";
         pilcrow.style.color = "#777";
 
         if (el.tagName !== "BR") {

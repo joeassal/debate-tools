@@ -33,14 +33,20 @@ async function sendUniversalShortcut(tabId, char, useShift = false, useAlt = fal
     await ensureDebuggerAttached(tabId);
 
     const isMac = navigator.userAgent.toUpperCase().includes('MAC');
+    const modifierKeys = {
+        alt: 1,
+        ctrl: 2,
+        meta: 4,
+        shift: 8,
+    };
     const modKey = isMac ? 91 : 17; // Cmd or Ctrl
     const altKey = 18;
     const shiftKey = 16;
+    const baseModifier = isMac ? modifierKeys.meta : modifierKeys.ctrl;
 
-    // 1. Calculate Bitmask correctly using bitwise OR
-    let modifierBit = isMac ? 8 : 2; 
-    if (useShift) modifierBit |= 4; // Use bitwise OR to set bits
-    if (useAlt)   modifierBit |= 1;
+    let modifierBit = baseModifier;
+    if (useShift) modifierBit |= modifierKeys.shift;
+    if (useAlt) modifierBit |= modifierKeys.alt;
 
     // 2. Handle KeyCode
     if (char === "Backspace") {
@@ -64,18 +70,22 @@ async function sendUniversalShortcut(tabId, char, useShift = false, useAlt = fal
     
     // Press Modifiers
     await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", { 
-        type: "keyDown", modifiers: modifierBit, windowsVirtualKeyCode: modKey 
+        type: "keyDown", modifiers: baseModifier, windowsVirtualKeyCode: modKey 
     });
     
+    let pressedModifiers = baseModifier;
+
     if (useAlt) {
+        pressedModifiers |= modifierKeys.alt;
         await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", { 
-            type: "keyDown", modifiers: modifierBit & ~1, windowsVirtualKeyCode: altKey 
+            type: "keyDown", modifiers: pressedModifiers, windowsVirtualKeyCode: altKey 
         });
     }
     
     if (useShift) {
+        pressedModifiers |= modifierKeys.shift;
         await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", { 
-            type: "keyDown", modifiers: modifierBit & ~4, windowsVirtualKeyCode: shiftKey 
+            type: "keyDown", modifiers: pressedModifiers, windowsVirtualKeyCode: shiftKey 
         });
     }
 
@@ -95,14 +105,16 @@ async function sendUniversalShortcut(tabId, char, useShift = false, useAlt = fal
     });
 
     if (useShift) {
+        pressedModifiers &= ~modifierKeys.shift;
         await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", { 
-            type: "keyUp", modifiers: modifierBit & ~4, windowsVirtualKeyCode: shiftKey 
+            type: "keyUp", modifiers: pressedModifiers, windowsVirtualKeyCode: shiftKey 
         });
     }
 
     if (useAlt) {
+        pressedModifiers &= ~modifierKeys.alt;
         await chrome.debugger.sendCommand(target, "Input.dispatchKeyEvent", { 
-            type: "keyUp", modifiers: modifierBit & ~1, windowsVirtualKeyCode: altKey 
+            type: "keyUp", modifiers: pressedModifiers, windowsVirtualKeyCode: altKey 
         });
     }
 
@@ -111,10 +123,29 @@ async function sendUniversalShortcut(tabId, char, useShift = false, useAlt = fal
     });
 }
 
+async function focusTabAndEditor(tabId) {
+    const tab = await chrome.tabs.get(tabId);
+    if (tab.windowId) {
+        await chrome.windows.update(tab.windowId, { focused: true });
+    }
+    await chrome.tabs.update(tabId, { active: true });
+    try {
+        await chrome.tabs.sendMessage(tabId, { action: "focusDocsEditor" });
+    } catch (error) {
+        console.warn("Could not focus Docs editor before paste", error);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 150));
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("Received message in background:", message);
-    
     (async () => {
+        if (message.action === "openSidePanel") {
+            await chrome.sidePanel.open({
+            windowId: sender.tab.windowId
+            });
+            return;
+        }
         try {
             if(message.action == "tabThenPaste") {
                 const newTab = await new Promise((resolve) => {
@@ -127,6 +158,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                             chrome.tabs.onUpdated.removeListener(listener);
                             // Add delay to let the editor fully load
                             setTimeout(async () => {
+                                await focusTabAndEditor(tabId);
                                 await sendUniversalShortcut(tabId, "v", false, false);
                                 resolve();
                             }, 2000); // 2 second delay

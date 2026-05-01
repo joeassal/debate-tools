@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flow</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      font-family: Calibri, Arial, sans-serif;
+      background: #f7f8fb;
+      color: #1f2937;
+    }
+
+    .app {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .toolbar {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px;
+      border-bottom: 1px solid #cfd6e4;
+      background: #ffffff;
+      flex: 0 0 auto;
+    }
+
+    .title {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .toolbar button {
+      border: 1px solid #c8d0dd;
+      background: #ffffff;
+      border-radius: 4px;
+      font-size: 11px;
+      padding: 4px 7px;
+      cursor: pointer;
+    }
+
+    .toolbar button:hover {
+      background: #eef2ff;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tabs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 6px;
+      border-bottom: 1px solid #cfd6e4;
+      background: #ffffff;
+      overflow-x: auto;
+      flex: 0 0 auto;
+    }
+
+    .tab {
+      border: 1px solid #c8d0dd;
+      background: #f8fafc;
+      border-radius: 4px;
+      font-size: 11px;
+      padding: 4px 8px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      background: #2d3c80;
+      border-color: #2d3c80;
+      color: #ffffff;
+    }
+
+    .tab-action {
+      width: 24px;
+      height: 24px;
+      border: 1px solid #c8d0dd;
+      background: #ffffff;
+      border-radius: 4px;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    .tab-action:hover {
+      background: #eef2ff;
+    }
+
+    .sheet-wrap {
+      flex: 1 1 auto;
+      overflow: auto;
+    }
+
+    .sheet {
+      min-width: 720px;
+      display: grid;
+      align-items: stretch;
+    }
+
+    .corner,
+    .col-head,
+    .row-head {
+      background: #eef2f7;
+      border-right: 1px solid #cfd6e4;
+      border-bottom: 1px solid #cfd6e4;
+      color: #475569;
+      font-size: 11px;
+      line-height: 28px;
+      text-align: center;
+      user-select: none;
+    }
+
+    .corner,
+    .col-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      font-weight: 700;
+    }
+
+    .corner {
+      left: 0;
+      z-index: 3;
+    }
+
+    .row-head {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+    }
+
+    .cell {
+      width: 100%;
+      min-height: 44px;
+      resize: none;
+      overflow: hidden;
+      border: 0;
+      border-right: 1px solid #d9dee8;
+      border-bottom: 1px solid #d9dee8;
+      padding: 5px 6px;
+      font: inherit;
+      font-size: 12px;
+      line-height: 15px;
+      color: #111827;
+      background: #ffffff;
+      outline: none;
+    }
+
+    .cell.col-even {
+      background: #ffffff;
+      color: royalblue;
+    }
+
+    .cell.col-odd {
+      background: #f4f7fb;
+      color: crimson;
+    }
+
+    .cell:focus {
+      box-shadow: inset 0 0 0 2px #2d3c80;
+      background: #fbfdff;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="toolbar">
+      <div class="title">Flow</div>
+      <div class="toolbar-actions">
+        <button id="clear-flows" type="button">Clear All</button>
+        <button id="add-row" type="button">Add Row</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <div id="tabs"></div>
+      <button id="add-tab" class="tab-action" type="button" title="Add Tab">+</button>
+      <button id="delete-tab" class="tab-action" type="button" title="Delete Tab">x</button>
+    </div>
+    <div class="sheet-wrap">
+      <div id="sheet" class="sheet"></div>
+    </div>
+  </main>
+
+  <script src="flow.js"></script>
+</body>
+</html>

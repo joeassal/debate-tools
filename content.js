@@ -71,9 +71,23 @@
     }
   };
 
+  DebateTools.focusDocsEditor = function focusDocsEditor() {
+    const editorIframe = document.querySelector(".docs-texteventtarget-iframe");
+    if (editorIframe) {
+      editorIframe.contentWindow.focus();
+      editorIframe.focus();
+      return true;
+    }
+    return false;
+  };
+
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action !== "focusDocsEditor") return;
+    sendResponse({ focused: DebateTools.focusDocsEditor() });
+  });
+
   const initObserver = new MutationObserver(() => {
     if (document.querySelector(".docs-texteventtarget-iframe")) {
-      DebateTools.injectSidebar();
       DebateTools.attachToDocsEditor();
       DebateTools.createSidebarToggleButton();
       initObserver.disconnect();

@@ -1,15 +1,6 @@
 (function (global) {
   const DebateTools = global.DebateTools || {};
 
-  function focusDocsEditor() {
-    const editorIframe = document.querySelector(".docs-texteventtarget-iframe");
-
-    if (editorIframe) {
-      editorIframe.contentWindow.focus();
-      editorIframe.focus();
-    }
-  }
-
   function getMainEditor() {
     return document.querySelector(".docs-main-container") || document.querySelector("#docs-chrome");
   }
@@ -24,7 +15,7 @@
           body {
             width: 900px;
             margin: 20px auto;
-            font-family: times new roman, serif;
+            font-family: Calibri, sans-serif;
             overflow: hidden;
           }
           #page-container {
@@ -117,7 +108,7 @@
   function attachSidebarButtonListeners(sidebar) {
     sidebar.querySelectorAll(".side-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
-        focusDocsEditor();
+        DebateTools.focusDocsEditor();
         await new Promise((resolve) => setTimeout(resolve, 50));
 
         const actionName = btn.getAttribute("data-action");
@@ -150,12 +141,12 @@
       border-left: 1px solid #d1d1d1;
       display: flex;
       flex-direction: column;
-      font-family: times new roman, serif;
+      font-family: Calibri, sans-serif;
       box-shadow: -2px 0 10px rgba(0,0,0,0.1);
     `;
 
     sidebar.innerHTML = /* html */ `
-      <div style="padding: 15px; background: #e28000; color: white; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+      <div style="padding: 15px; background: #2d3c80; color: white; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
         <span>Debate Tools</span>
         <button id="close-sidebar" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">x</button>
       </div>
@@ -175,10 +166,10 @@
         <button class="side-btn" data-action="Importdocx">Open DocX</button>
         <button class="side-btn" data-action="Exportdocx">Export DocX</button>
         <button class="side-btn" data-action="Readmode">Read Mode</button>
+        <button class="side-btn" data-action="Timer">Timer</button>
+        <button id="flow-btn" class="side-btn" data-action="Flow">Flow</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
-        <div class="vTub">
-          <div id="tree"></div>
-        </div>
+        <div id="folder-tree-host"></div>
       </div>
       <style>
         .side-btn {
@@ -194,254 +185,17 @@
         }
         .side-btn:hover { background: #f8f9fa; }
         .side-btn:active { background: #e8eaed; }
-        details {
-          margin-left: 10px;
-        }
-        .vTub {
-          padding: 10px;
-          border: 1px solid #8b8b8b;
+        #folder-tree-host {
           margin-top: auto;
-          height: 30vh;
-          min-height: 180px;
-          max-height: 420px;
-          overflow: hidden;
         }
-        #tree {
-          height: calc(100%);
-          overflow-y: auto;
-        }
-        .treeBtn {
-          border: 1px solid #dadce0;
-          background: none;
-          cursor: pointer;
-          font-size: 10px;
-          margin-left: 4px;
-        }
-        .treeBtn:hover {
-          background-color: #e28000;
-        }
-      </style>
+    </style>  
     `;
     document.body.appendChild(sidebar);
+    document.getElementById("flow-btn").addEventListener("click", () => {
+      chrome.runtime.sendMessage({ action: "openSidePanel" });
+    });
 
-    //start folder system
-    const root = document.getElementById("tree");
-    const folderStorageKey = "debateTools.folderTree";
-
-    function saveFolderTree() {
-        const tree = [...root.children]
-            .filter((child) => child.tagName === "DETAILS")
-            .map(serializeFolder);
-
-        localStorage.setItem(folderStorageKey, JSON.stringify(tree));
-    }
-
-    function serializeFolder(folder) {
-        const children = [...folder.children]
-            .filter((child) => child.tagName !== "SUMMARY")
-            .map((child) => {
-                if (child.tagName === "DETAILS") return serializeFolder(child);
-
-                return {
-                    type: "file",
-                    name: child.dataset.name || child.textContent,
-                    block: child.dataset.block
-                };
-            });
-
-        return {
-            type: "folder",
-            name: folder.dataset.name,
-            open: folder.open,
-            children,
-        };
-    }
-
-    function loadFolderTree() {
-        const savedTree = localStorage.getItem(folderStorageKey);
-        if (!savedTree) return false;
-
-        try {
-            const tree = JSON.parse(savedTree);
-            root.replaceChildren();
-            tree.forEach((node) => root.appendChild(createTreeNode(node)));
-            return true;
-        } catch (error) {
-            console.warn("Could not load saved folder tree", error);
-            return false;
-        }
-    }
-
-    function createTreeNode(node) {
-        if (node.type === "folder") {
-            const folder = createFolder(node.name);
-            folder.open = node.open !== false;
-            (node.children || []).forEach((child) => {
-                folder.appendChild(createTreeNode(child));
-            });
-            return folder;
-        }
-
-        return createFile(node.name, node.block);
-    }
-
-    function createFolder(name) {
-        const folder = document.createElement("details");
-        folder.dataset.name = name;
-        folder.open = true;
-
-        const summary = document.createElement("summary");
-        const folderLabel = document.createElement("span");
-        folderLabel.textContent = name + " ";
-
-        const addBtn = document.createElement("button");
-        addBtn.textContent = "+";
-        addBtn.type = "button";
-        addBtn.className = "treeBtn";
-        addBtn.title = "Add Subfolder"
-        const insertBtn = document.createElement("button");
-        insertBtn.textContent = "↵";
-        insertBtn.type = "button";
-        insertBtn.className = "treeBtn";
-        insertBtn.title = "Insert Selected Card as file"
-        let deleteBtn = null;
-        if (name !== "Orgin") {
-          deleteBtn = document.createElement("button");
-          deleteBtn.textContent = "x";
-          deleteBtn.type = "button";
-          deleteBtn.title = "Delete Folder";
-          deleteBtn.className = "treeBtn";
-        }
-        addBtn.onclick = function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const folderName = prompt("Folder name:");
-            if (!folderName) return;
-
-            addFolder(getFolderPath(folder) + "/" + folderName);
-        };
-
-        insertBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            focusDocsEditor();
-            await new Promise((resolve) => setTimeout(resolve, 50));
-            const blockData = await DebateTools.getSelection();
-            console.log("Got block data for insertion:", blockData);
-            const fileName = prompt("Card/Block name:");
-            if (!fileName) return;
-            addFile(getFolderPath(folder) + "/" + fileName, blockData);
-        });
-
-        if (deleteBtn) {
-            deleteBtn.addEventListener("click", (e) => {
-                if(confirm("Are you sure you want to delete this folder and all its contents?")) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  folder.remove();
-                  saveFolderTree();
-                }
-            });
-        }
-
-        summary.appendChild(folderLabel);
-        summary.appendChild(addBtn);
-        summary.appendChild(insertBtn);
-        if (deleteBtn) summary.appendChild(deleteBtn);
-        folder.appendChild(summary);
-
-        return folder;
-    }
-
-    function createFile(name, blockData) {
-        const file = document.createElement("div");
-        file.dataset.type = "file";
-        file.dataset.name = name;
-        file.dataset.block = blockData;
-        file.style.marginLeft = "20px";
-
-        const fileLabel = document.createElement("button");
-        fileLabel.textContent = name + " ";
-        fileLabel.type = "button";
-        fileLabel.style.cssText = `border:none; cursor:pointer; font-size: 10px;`;
-        fileLabel.addEventListener("click", async (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          focusDocsEditor();
-          await new Promise((resolve) => setTimeout(resolve, 50));
-          console.log("Inserting block data for file:", file.dataset.block);
-          await DebateTools.pasteHTML(file.dataset.block);
-        });
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "x";
-        deleteBtn.type = "button";
-        deleteBtn.className = "treeBtn";
-        deleteBtn.title = "Delete File";
-
-        deleteBtn.addEventListener("click", (e) => {
-            if(confirm("Are you sure you want to delete this folder and all its contents?")) {
-                e.preventDefault();
-                e.stopPropagation();
-                file.remove();
-                saveFolderTree();
-            }
-        });
-
-        file.appendChild(fileLabel);
-        file.appendChild(deleteBtn);
-        return file;
-    }
-
-    function getFolderPath(folder) {
-        const parts = [];
-
-        while (folder && folder !== root) {
-            parts.unshift(folder.dataset.name);
-            folder = folder.parentElement.closest("details");
-        }
-
-        return parts.join("/");
-    }
-
-    function getOrCreateFolder(parts) {
-        let current = root;
-
-        for (const part of parts) {
-            let folder = [...current.children].find(el =>
-                el.tagName === "DETAILS" &&
-                el.dataset.name === part
-            );
-
-            if (!folder) {
-                folder = createFolder(part);
-                current.appendChild(folder);
-            }
-
-            current = folder;
-        }
-
-        return current;
-    }
-    function addFolder(path) {
-      const parts = path.split("/").filter(Boolean);
-      getOrCreateFolder(parts);
-      saveFolderTree();
-    }
-    function addFile(path, blockData) {
-      const parts = path.split("/").filter(Boolean);
-      const fileName = parts.pop();
-
-      const folder = getOrCreateFolder(parts);
-
-      folder.appendChild(createFile(fileName, blockData));
-      saveFolderTree();
-    }
-    if (!loadFolderTree()) {
-      addFolder("Orgin");
-    }
-    // end folder system
+    DebateTools.attachFolderTree();
     const resizeHandle = document.createElement("div");
     resizeHandle.id = "sidebar-resize-handle";
     resizeHandle.style.cssText = `
@@ -481,7 +235,7 @@
       bottom: 20px;
       right: 20px;
       padding: 10px 15px;
-      background: #fd4444;
+      background: #2d3c80;
       color: white;
       border: none;
       border-radius: 4px;
@@ -493,11 +247,11 @@
     `;
 
     toggleBtn.addEventListener("mouseover", () => {
-      toggleBtn.style.background = "#e63939";
+      toggleBtn.style.background = "#2d3c80";
     });
 
     toggleBtn.addEventListener("mouseout", () => {
-      toggleBtn.style.background = "#fd4444";
+      toggleBtn.style.background = "#2d3c80";
     });
 
     toggleBtn.addEventListener("click", () => {

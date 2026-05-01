@@ -19,12 +19,12 @@
     "content_scripts": [
         {
             "matches": ["https://docs.google.com/document/d/*"],
-            "js": ["docshift.min.js", "utils.js", "sidebar.js", "content.js"],
+            "js": ["docshift.min.js", "utils.js", "folder-tree.js", "sidebar.js", "content.js"],
             "run_at": "document_idle",
             "all_frames": false
         }
     ],
     "side_panel": {
-        "default_path": "sidepanel.html"
+        "default_path": "flow.html"
     }
 }
