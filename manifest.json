@@ -2,7 +2,10 @@
     "manifest_version": 3,
     "name": "Copy Logger",
     "version": "1.0",
-    "host_permissions": ["https://docs.google.com/document/d/*"],
+    "host_permissions": [
+        "https://docs.google.com/document/d/*",
+        "https://opencaselist.com/*"
+    ],
     "permissions": [
     "clipboardRead",
     "clipboardWrite",

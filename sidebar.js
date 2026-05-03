@@ -27,6 +27,11 @@
           #content-area {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
+          }
+          #content-area * {
+            max-width: 100%;
+            box-sizing: border-box;
           }
           #page-info {
             text-align: center;
@@ -53,15 +58,22 @@
 
     readWindow.addEventListener("keydown", (event) => {
       if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-        contentArea.scrollBy({ top: contentArea.clientHeight, behavior: "smooth" });
+        event.preventDefault();
+        contentArea.scrollLeft = 0;
+        contentArea.scrollBy({ top: contentArea.clientHeight-200, behavior: "smooth" });
         currentPage++;
         pageInfo.innerHTML = `Page <span id="current-page">${currentPage}</span>`;
       }
       if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-        contentArea.scrollBy({ top: -contentArea.clientHeight, behavior: "smooth" });
+        event.preventDefault();
+        contentArea.scrollLeft = 0;
+        contentArea.scrollBy({ top: 200-contentArea.clientHeight, behavior: "smooth" });
         currentPage = currentPage > 1 ? currentPage - 1 : 1;
         pageInfo.innerHTML = `Page <span id="current-page">${currentPage}</span>`;
       }
+    });
+    contentArea.addEventListener("scroll", () => {
+      if (contentArea.scrollLeft !== 0) contentArea.scrollLeft = 0;
     });
   }
 
@@ -73,10 +85,7 @@
     readWindow.focus();
     attachReadModeNavigation(readWindow);
   }
-  async function openSpeechDocsWindow() {
-    const speechWindow = window.open("https://docs.new", "SpeechDoc", "width=700px,height=900px");
-    speechWindow.focus();
-  }
+
 
   function attachSidebarResize(sidebar, resizeHandle) {
     let isResizing = false;
@@ -122,6 +131,12 @@
         }
         else if (actionName === "Timer") {
           window.open("https://debatetimer.net/", "Debate Timer", "width=400,height=600");
+        }
+        else if (actionName === "OpenCaseList") {
+          const parts=localStorage.getItem("userName").trim().split(" ")
+          const caseListUrl = `https://opencaselist.com/${localStorage.getItem("userFormat") + "25"}/${localStorage.getItem("userSchool")}/${parts[0].slice(0, 2)+parts[parts.length - 1].slice(0, 2)}/add`;
+          await chrome.runtime.sendMessage({ action: "openCleanCaseList", url: caseListUrl });
+          
         }
         else {
           await DebateTools.runAction(actionName);
@@ -172,35 +187,35 @@
         <button class="side-btn" data-action="Emphasis">Emphasis (${localStorage.getItem("Emphasis")})</button>
         <button class="side-btn" data-action="Highlight">Highlight (${localStorage.getItem("Highlight")})</button>
         <button class="side-btn" data-action="Clear">Clear (${localStorage.getItem("Clear")})</button>
-        <button class="side-btn" data-action="Shrink">Shrink</button>
-        <button class="side-btn" data-action="StandardizeHighlights">Standardize Highlights</button>
+        <button class="side-btn" data-action="Shrink">⛶ Shrink</button>
+        <button class="side-btn" data-action="StandardizeHighlights">🖍 Standardize Highlights</button>
         <label class="select-row highlight-select-row" data-action="Highlight">
         <span>Highlight Color</span>
         <select id="highlight-color-select" name="HighlightColor" class="sidebar-select">
-        <option style="background-color: yellow;" value="yellow">Y</option>
-        <option style="background-color: lime;" value="lime">G</option>
-        <option style="background-color: cyan;" value="cyan">C</option>
-        <option style="background-color: magenta;" value="magenta">M</option>
-        <option style="background-color: red;" value="red">R</option>
+        <option  yellow;" value="yellow">🟨</option>
+        <option  lime;" value="lime">🟩</option>
+        <option cyan;" value="cyan">🟦</option>
+        <option  value="magenta">🟪</option>
+        <option value="red">🟥️</option>
         </select>
         </label>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
-        <button class="side-btn" data-action="Importdocx">Quick Import DOCX</button>
-        <button class="side-btn" data-action="ImportdocxToClipboard">Import to Clipboard</button>
-        <button class="side-btn" data-action="Exportdocx">Export entire as DOCX</button>
-        <button class="side-btn" data-action="Exportpdf">Export entire as PDF</button>
+        <button class="side-btn" data-action="Importdocx">🗁 Quick Import DOCX</button>
+        <button class="side-btn" data-action="ImportdocxToClipboard">⇩ Import to Clipboard</button>
+        <button class="side-btn" data-action="Exportdocx">🗎 Export DOCX</button>
+        <button class="side-btn" data-action="Exportpdf">🗎 Export PDF</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
-        <button class="side-btn" data-action="Readmode">Read Mode</button>
-        <button id="flow-btn" class="side-btn" data-action="Flow">Flow</button>
-        <button class="side-btn" data-action="Timer">Timer</button>
+        <button class="side-btn" data-action="Readmode">🕮 Read Mode</button>
+        <button id="flow-btn" class="side-btn" data-action="Flow">✎ Flow</button>
+        <button class="side-btn" data-action="Timer">⏲ Timer</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" data-action="NewSpeechDoc">Create Speech Doc</button>
         <button class="side-btn" data-action="SendSpeechDoc">Send to Speech Doc</button>
-        <button class="side-btn" data-action="Wikify">Wikify</button>
-        <button class="side-btn" data-action="Readmode">Caselist</button>
+        <button class="side-btn" data-action="Wikify">❝❞ Wikify</button>
+        <button class="side-btn" data-action="OpenCaseList">🗀 Caselist</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
-        <button class="side-btn" id="SettingsBtn">Settings</button>
-        <a class="side-btn" href="https://www.example.com">Help</a>
+        <button class="side-btn" id="SettingsBtn">⛯ Settings</button>
+        <a class="side-btn" href="https://www.example.com" style="color:navy;">ⓘ Help</a>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         </div>
         <div id="folder-tree-host"></div>
@@ -210,7 +225,7 @@
         <b>Settings</b>
         <button id="settings-close" type="button">X</button>
       </div>
-        <details id="keybindsFormat" open><summary><span>Formatting</span><button id="settings-default" type="button">Reset Default</button></summary>
+        <details class="settings-detail" id="keybindsFormat"><summary><span>Formatting Keybinds</span><button id="settings-default" type="button">Reset Default</button></summary>
             <label class="settings-row">Paste<select name="Paste"><option value="Not Selected">Not Selected</option></select></label>
             <label class="settings-row">Condense<select name="Condense"><option value="Not Selected">Not Selected</option></select></label>
             <label class="settings-row">Pocket<select name="Pocket"><option value="Not Selected">Not Selected</option></select></label>
@@ -222,6 +237,22 @@
             <label class="settings-row">Emphasis<select name="Emphasis"><option value="Not Selected">Not Selected</option></select></label>
             <label class="settings-row">Highlight<select name="Highlight"><option value="Not Selected">Not Selected</option></select></label>
             <label class="settings-row">Clear<select name="Clear"><option value="Not Selected">Not Selected</option></select></label>
+        </details>
+        <details class="settings-detail" id="Features"><summary><span>Features</span></summary>
+            <label class="settings-row">Cut Text in Read Mode?<input type="checkbox" name="cutTextReadMode"></label>
+            <label class="settings-row">Use pilcrows on Condense?<input type="checkbox" name="usePilcrows"></label>
+            <label class="settings-row">New window when making speech doc?<input type="checkbox" name="speechDocNewWindow"></label>
+        </details>
+        <details class="settings-detail" id="Caselist"><summary><span>Caselist Info</span></summary>
+            <label class="settings-row">Format<select id="userFormat">
+            <option value="hspolicy">HS Policy</option>
+            <option value="hsld">HS Lincoln-Douglas</option>
+            <option value="hspf">HS Public Forum</option>
+            <option value="nfald">NFA Lincoln-Douglas</option>
+            <option value="ndtceda">College Policy</option>
+            </select></label>
+            <label class="settings-row">School Name on Wiki<input name="userSchool"></label>
+            <label class="settings-row">Full Name<input name="userName"></label>
         </details>
       </div>
       <style>
@@ -237,7 +268,7 @@
           text-align: left;
           text-decoration: none;
           color: inherit;
-          font-size: 11px;
+          font-size: 12px;
           transition: background 0.2s;
         }
         .side-btn:hover { background: #f8f9fa; }
@@ -270,7 +301,7 @@
           border: 1px solid #dadce0;
           background: #fff;
           color: #202124;
-          font-size: 11px;
+          font-size: 12px;
         }
         .highlight-select-row {
           min-height: 24px;
@@ -281,12 +312,11 @@
           min-height: 24px;
           padding: 2px 22px 2px 7px;
           border: 1px solid #c9d1d9;
-          border-radius: 4px;
           background-color: #f8fafc;
           color: #202124;
           cursor: pointer;
           font-family: Calibri, sans-serif;
-          font-size: 11px;
+          font-size: 12px;
           outline: none;
           transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
         }
@@ -314,15 +344,14 @@
         #settings {
           position: fixed;
           top: 20%;
-          left: 72%;
+          left: 70%;
           box-sizing: border-box;
           padding: 12px;
           border: 1px solid #c9d1d9;
-          border-radius: 6px;
           background: white;
-          width: 300px;
-          height: 400px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+          width: 280px;
+          height: 350px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.11);
           color: #202124;
           font-size: 12px;
           overflow: auto;
@@ -340,18 +369,17 @@
           width: 24px;
           height: 24px;
           border: 1px solid #dadce0;
-          border-radius: 4px;
-          background: #fff;
+          background: #fff; 
           cursor: pointer;
-          font-size: 11px;
+          font-size: 12px;
         }
         #settings-close:hover {
           background: #f8f9fa;
         }
-        #keybindsFormat {
-          font-size: 12px;
+        .settings-detail {
+          font-size: 13px;
         }
-        #keybindsFormat summary {
+        .settings-detail summary {
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -362,11 +390,10 @@
         }
         #settings-default {
           border: 1px solid #dadce0;
-          border-radius: 4px;
           background: #f8fafc;
           cursor: pointer;
           padding: 3px 7px;
-          font-size: 11px;
+          font-size: 12px;
         }
         #settings-default:hover {
           background: #eef2ff;
@@ -389,7 +416,10 @@
     });
 
     // Settings logic
-
+    function changeSetting(key, value) {
+      DebateTools.settings[key] = value
+      localStorage.setItem(key, value);
+    }
     
     document.getElementById("SettingsBtn").addEventListener("click", () => {
       document.getElementById("settings").style.display = "block";
@@ -402,12 +432,21 @@
         setKeybind(DebateTools.bindableActions[i], "F"+(i+2))
       }
     })
-    document.getElementById("highlight-color-select").addEventListener("change", (e) => {
-      DebateTools.settings.highlightColor = e.target.value;
-      localStorage.setItem("HighlightColor", e.target.value);
-    });
+
     document.getElementById("highlight-color-select").value = DebateTools.settings.highlightColor;
-    
+    document.getElementById("highlight-color-select").addEventListener("change", (e) => changeSetting("highlightColor", e.target.value));
+    document.getElementById("userFormat").value = DebateTools.settings.userFormat;
+    document.getElementById("userFormat").addEventListener("change", (e) => changeSetting("userFormat", e.target.value));
+    document.querySelectorAll('INPUT').forEach((input) => {
+      if(input.type=="checkbox") {
+        input.checked = DebateTools.settings[input.name]
+        input.addEventListener("change", (e) => changeSetting(input.name, e.target.checked))
+      } else {
+        input.value = DebateTools.settings[input.name]
+        input.addEventListener("change", (e) => changeSetting(input.name, e.target.value))
+      }
+    })
+
     //keybinds
     keybindsFormat = document.getElementById("keybindsFormat")
     keybindsFormat.querySelectorAll("SELECT").forEach((tsKey) => {
@@ -442,6 +481,9 @@
       );
       if (select) select.value = value;
     }
+    // end keybind logic
+
+
 
     //attaching folder tree
     DebateTools.attachFolderTree();
@@ -489,7 +531,6 @@
       background: #2d3c80;
       color: white;
       border: none;
-      border-radius: 4px;
       cursor: pointer;
       z-index: 999999;
       font-weight: bold;

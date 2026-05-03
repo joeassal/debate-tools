@@ -133,6 +133,57 @@ async function focusTabAndEditor(tabId) {
     await new Promise((resolve) => setTimeout(resolve, 150));
 }
 
+async function openCleanCaseListWindow(url) {
+    const caseListWindow = await new Promise((resolve) => {
+        chrome.windows.create({
+            url,
+            type: "popup",
+            width: 600,
+            height: 800
+        }, resolve);
+    });
+
+    const tabId = caseListWindow.tabs && caseListWindow.tabs[0] && caseListWindow.tabs[0].id;
+    if (!tabId) return;
+
+    const cleanup = async () => {
+        await chrome.scripting.executeScript({
+            target: { tabId },
+            func: () => {
+                function cleanLayout() {
+                    let root = document.getElementById("root")
+                    root.querySelector("HEADER").remove()
+                    root.querySelector("FOOTER").remove()
+                    const div = root.querySelector("DIV")
+                    if(div.innerText.includes("Welcome to openCaselist")) {
+                        alert("You need to login on the official opencaselist  website to use the extension addon")
+                    } else {
+                        div.querySelector("DIV").remove()
+                    }
+                }
+
+                cleanLayout();
+
+                const observer = new MutationObserver(cleanLayout);
+                observer.observe(document.body, { childList: true, subtree: true });
+                setTimeout(() => observer.disconnect(), 5000);
+            }
+        });
+    };
+
+    await new Promise((resolve) => {
+        const listener = (updatedTabId, changeInfo) => {
+            if (updatedTabId === tabId && changeInfo.status === "complete") {
+                chrome.tabs.onUpdated.removeListener(listener);
+                resolve();
+            }
+        };
+        chrome.tabs.onUpdated.addListener(listener);
+    });
+
+    await cleanup();
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("Received message in background:", message);
     (async () => {
@@ -152,6 +203,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({ success: true });
                 return;
             }
+            else if (message.action === "openCleanCaseList") {
+                await openCleanCaseListWindow(message.url);
+                sendResponse({ success: true });
+                return;
+            }
             else if(message.action == "newSpeechDoc") {
                 if(speechDocID) {
                     try {
@@ -160,15 +216,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         return;
                     } catch (e) {}
                 }
-                const speechWindow = await new Promise((resolve) => {
-                    chrome.windows.create({ 
-                        url: "https://docs.google.com/document/create",
-                        type: "popup", // This creates the separate window without the tab bar
-                        width: 900,
-                        height: 700
-                    }, resolve);
-                });
-                speechDocID = speechWindow.tabs[0].id; 
+                if (message.newWindow !== false) {
+                    const speechWindow = await new Promise((resolve) => {
+                        chrome.windows.create({
+                            url: "https://docs.google.com/document/create",
+                            type: "popup", // This creates the separate window without the tab bar
+                            width: 900,
+                            height: 700
+                        }, resolve);
+                    });
+                    speechDocID = speechWindow.tabs[0].id;
+                } else {
+                    const speechTab = await new Promise((resolve) => {
+                        chrome.tabs.create({ url: "https://docs.google.com/document/create" }, resolve);
+                    });
+                    speechDocID = speechTab.id;
+                }
                 sendResponse({ success: true });
             }
             else if(message.action == "sendSpeechDoc") {

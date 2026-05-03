@@ -46,10 +46,13 @@
     }
     return "";
   };
-  DebateTools.getSelection = async function getSelection() {
+  DebateTools.sendShortcut = async function sendShortcut(action, useShift = false, useAlt = false) {
     await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: "c", useShift: false, useAlt: false }, resolve);
+      chrome.runtime.sendMessage({ action, useShift, useAlt }, resolve);
     });
+  };
+  DebateTools.getSelection = async function getSelection() {
+    await DebateTools.sendShortcut("c");
     const CB = await DebateTools.checkClipboard();
     return CB;
   };
@@ -59,9 +62,7 @@
       await navigator.clipboard.write([new ClipboardItem({ "text/html": blob })]);
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
-    await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: "v", useShift: false, useAlt: false }, resolve);
-    });
+    await DebateTools.sendShortcut("v");
   }
 
   DebateTools.ensureDocshiftLoaded = async function ensureDocshiftLoaded() {
@@ -79,9 +80,7 @@
     const startCB = await DebateTools.checkClipboard();
     const startCB2 = await navigator.clipboard.read();
 
-    await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: "c", useShift: false, useAlt: false }, resolve);
-    });
+    await DebateTools.sendShortcut("c");
 
     let newCB = await DebateTools.checkClipboard();
     if (startCB === newCB) {
@@ -97,9 +96,7 @@
     const blob = new Blob([modifiedHtml ?? container.innerHTML], { type: "text/html" });
     await navigator.clipboard.write([new ClipboardItem({ "text/html": blob })]);
 
-    await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: "v", useShift: false, useAlt: false }, resolve);
-    });
+    await DebateTools.sendShortcut("v");
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     await navigator.clipboard.write(startCB2);
@@ -110,7 +107,8 @@
       spans.forEach((span) => {
         const size = span.style.fontSize;
         const underline = span.style.textDecoration;
-        if (!(underline && underline.includes("underline"))) {
+        const bg = span.style.backgroundColor;
+        if (!(underline && underline.includes("underline") || bg && bg!=="transparent")) {
           const newSize = parseFloat(size) - 1;
           span.style.fontSize = newSize + "px";
         }
@@ -122,7 +120,7 @@
     return DebateTools.modifySelection(async (container) => {
       const blocks = container.querySelectorAll("p, div, br");
 
-      blocks.forEach((el) => {
+      if(DebateTools.settings.usePilcrows) blocks.forEach((el) => {
         const pilcrow = document.createElement("span");
         pilcrow.innerText = " ¶ ";
         pilcrow.style.color = "#777";
@@ -157,63 +155,60 @@
     });
   };
 
+  function getTrimmedReadModeParagraph(pg) {
+    const innerText = pg.innerText;
+    const isCite = innerText.includes("http") || innerText.includes("www");
+    let isCard = false;
+    let contingentKC = "";
+
+    pg.querySelectorAll("span").forEach((span) => {
+      if (span.style.fontSize && parseFloat(span.style.fontSize) >= 13 && span.style.fontWeight > 400) {
+        contingentKC += span.outerHTML + " ";
+        return;
+      }
+
+      if (isCite && span.style.fontWeight && span.style.fontWeight > 400) {
+        contingentKC += span.outerHTML + " ";
+      }
+
+      const bg = span.style.backgroundColor;
+      const size = span.style.fontSize;
+
+      if (bg && bg !== "transparent") {
+        isCard = true;
+        contingentKC += span.outerHTML + " ";
+      }
+
+      if (size && parseFloat(size) <= 8) {
+        isCard = true;
+      }
+    });
+    if(isCite && contingentKC==="") contingentKC+=pg.innerHTML
+
+    return isCard || isCite ? contingentKC : pg.outerHTML;
+  }
+
   DebateTools.readMode = async function readMode() {
     const startCB = await DebateTools.checkClipboard();
     const startCB2 = await navigator.clipboard.read();
 
-    await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: "a", useShift: false, useAlt: false }, resolve);
-    });
-    await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: "c", useShift: false, useAlt: false }, resolve);
-    });
+    await DebateTools.sendShortcut("a");
+    await DebateTools.sendShortcut("c");
 
-    if (startCB == await DebateTools.checkClipboard()) {
+    const newCB = await DebateTools.checkClipboard();
+    if (startCB == newCB) {
       return;
     }
 
-    const newCB = await DebateTools.checkClipboard();
     const container = document.createElement("div");
     container.innerHTML = newCB;
 
     await navigator.clipboard.write(startCB2);
 
-    let keepContent = "";
+    if(!DebateTools.settings.cutTextReadMode) return container.innerHTML
+
     const pgs = container.querySelector("b");
-
-    for (const pg of pgs.children) {
-      const innerText = pg.innerText;
-      const isCite = innerText.includes("http") || innerText.includes("www");
-      let isCard = false;
-      let contingentKC = "";
-
-      pg.querySelectorAll("span").forEach((span) => {
-        if (span.style.fontSize && parseFloat(span.style.fontSize) >= 13 && span.style.fontWeight > 400) {
-          contingentKC += span.outerHTML + " ";
-          return;
-        }
-        if (isCite && span.style.fontWeight && span.style.fontWeight > 400) {
-          contingentKC += span.outerHTML + " ";
-        }
-        const bg = span.style.backgroundColor;
-        const size = span.style.fontSize;
-        if (bg && bg !== "transparent") {
-          isCard = true;
-          contingentKC += span.outerHTML + " ";
-        }
-        if (size && parseFloat(size) <= 8) {
-          isCard = true;
-        }
-      });
-
-      if (isCard || isCite) {
-        keepContent += contingentKC;
-      } else {
-        keepContent += pg.outerHTML;
-      }
-    }
-
-    return keepContent;
+    return [...pgs.children].map(getTrimmedReadModeParagraph).join("");
   };
 
   DebateTools.ImportDocX = async function ImportDocX() {
@@ -275,9 +270,7 @@
   };
 
   DebateTools.wikify = async function wikify() {
-    await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: "c", useShift: false, useAlt: false }, resolve);
-    });
+    await DebateTools.sendShortcut("c");
     let newCB = await DebateTools.checkClipboard();
     newCB = newCB.replace(/\bid=(["']).*?\1/g, 'id=""');
     const container = document.createElement("div");
@@ -285,9 +278,10 @@
     const pgs = container.querySelector("b");
     let final="";
     let cardText = "";
+    if(!pgs) {alert("Please select content to wikify!"); return;}
     for (const pg of pgs.children) {
       
-      const innerText = pg.innerText;
+      let innerText = pg.innerText;
       let isCard = false;
       const isCite = innerText.includes("http") || innerText.includes("www");
       const isHeader = pg.tagName === "H4" || pg.tagName === "H3" || pg.tagName === "H2" || pg.tagName === "H1"
@@ -295,12 +289,12 @@
       pg.querySelectorAll("*").forEach((span) => {
         const bg = span.style.backgroundColor;
         const size = span.style.fontSize;
-        isCard = (bg && bg !== "transparent" || size && parseFloat(size) <= 8) && !isCite && !isHeader; 
-        if(isCard) {
-          cardText += innerText + " ";
-        }
+        if((bg && bg !== "transparent" || size && parseFloat(size) <= 8) && !isCite && !isHeader) isCard=true;
       });
-      // if card, but last paragraph was card
+      if(isCard) {
+        cardText += innerText + " ";
+      }
+      // if not card, but last paragraph was card
       if(!isCard && cardText!="") {
         let pgTexts = cardText.trim().split(/\s+/)
         if(pgTexts.length<50) {
@@ -310,7 +304,8 @@
         cardText = "";
       }
       if (isHeader) {
-        final+=`\n====${innerText}====\n`;
+        const headingLevel = parseInt(pg.tagName.slice(1), 10);
+        final += "\n" + "#".repeat(headingLevel) + innerText + "\n";
       }else if(!isCard) {
         final+=innerText + "\n";
       }
@@ -327,9 +322,7 @@
   };
 
   DebateTools.standardizeHighlights = async () => {
-    await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: "a"}, resolve);
-    });
+    await DebateTools.sendShortcut("a");
     return DebateTools.modifySelection(async (container) => {
       container.querySelectorAll("*").forEach((span) => {
         const bg = span.style.backgroundColor;

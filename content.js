@@ -2,7 +2,14 @@
   const DebateTools = global.DebateTools || {};
 
   DebateTools.settings = {
-    highlightColor: localStorage.getItem("HighlightColor") || "yellow",
+    highlightColor: localStorage.getItem("highlightColor") || "yellow",
+    cutTextReadMode: localStorage.getItem("cutTextReadMode") !== "false",
+    usePilcrows: localStorage.getItem("usePilcrows") !== "false",
+    speechDocNewWindow: localStorage.getItem("speechDocNewWindow") !== "false",
+
+    userName: localStorage.getItem("userName") || "",
+    userSchool: localStorage.getItem("userSchool") || "",
+    userFormat: localStorage.getItem("userFormat") || "hspolicy",
   };
   highlightLookup = {
     yellow: "docs-material-colorpalette-cell-103",
@@ -12,12 +19,12 @@
     red: "docs-material-colorpalette-cell-101",
   }
   DebateTools.actions = {
-    Paste: async () => await chrome.runtime.sendMessage({ action: "v", useAlt: false, useShift: true }),
+    Paste: async () => await DebateTools.sendShortcut("v", true),
     Condense: async () => await DebateTools.condense(),
-    Pocket: async () => await chrome.runtime.sendMessage({ action: "1", useAlt: true }),
-    Hat: async () => await chrome.runtime.sendMessage({ action: "2", useAlt: true }),
-    Block: async () => await chrome.runtime.sendMessage({ action: "3", useAlt: true }),
-    Tag: async () => await chrome.runtime.sendMessage({ action: "4", useAlt: true }),
+    Pocket: async () => await DebateTools.sendShortcut("1", false, true),
+    Hat: async () => await DebateTools.sendShortcut("2", false, true),
+    Block: async () => await DebateTools.sendShortcut("3", false, true),
+    Tag: async () => await DebateTools.sendShortcut("4", false, true),
     Cite: async () => {
       DebateTools.clickDocButton("clearFormattingButton");
       DebateTools.clickDocButton("fontSizeIncrement");
@@ -32,7 +39,7 @@
     },
     Clear: async () => {
       DebateTools.clickDocButton("clearFormattingButton");
-      await chrome.runtime.sendMessage({ action: "0", useAlt: true });
+      await DebateTools.sendShortcut("0", false, true);
     },
     Emphasis: () => {DebateTools.clickDocButton("underlineButton");DebateTools.clickDocButton("boldButton")},
     Readmode: async () => await DebateTools.readMode(),
@@ -41,7 +48,7 @@
     Exportdocx: () => DebateTools.ExportDocX(),
     Exportpdf: () => DebateTools.ExportPDF(),
     SendSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "sendSpeechDoc" }, (response) => {if(response && !response.success) { alert(response.message); }}),
-    NewSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "newSpeechDoc" }, (response) => {if(response && !response.success) { alert(response.message); }}),
+    NewSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "newSpeechDoc", newWindow: DebateTools.settings.speechDocNewWindow }, (response) => {if(response && !response.success) { alert(response.message); }}),
     Shrink: async () => await DebateTools.shrink(),
     Wikify: async () => await DebateTools.wikify(),
     StandardizeHighlights: async () => await DebateTools.standardizeHighlights(),
@@ -66,6 +73,9 @@
   // If user is new, do these actions
   if(localStorage.getItem("hasLoadedBefore") === null) {
     DebateTools.defaultKeybinds()
+    localStorage.setItem("cutTextReadMode", "true");
+    localStorage.setItem("usePilcrows", "true");
+    localStorage.setItem("speechDocNewWindow", "true");
     localStorage.setItem("hasLoadedBefore", "true");
   }
 
