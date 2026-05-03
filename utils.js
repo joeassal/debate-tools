@@ -1,9 +1,6 @@
 (function (global) {
   const DebateTools = global.DebateTools || {};
 
-  DebateTools.settings = {
-    highlightColor: "yellow",
-  };
 
   DebateTools.clickDocButton = function clickDocButton(buttonId) {
     const buttonEl = document.getElementById(buttonId);
@@ -106,16 +103,6 @@
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     await navigator.clipboard.write(startCB2);
-  };
-
-  DebateTools.changeProperty = function changeProperty(property, value) {
-    return DebateTools.modifySelection(async (container) => {
-      const spans = container.querySelectorAll("*");
-      spans.forEach((span) => {
-        span.setAttribute(property, value);
-      });
-      return container.innerHTML;
-    });
   };
   DebateTools.shrink = function shrink() {
     return DebateTools.modifySelection(async (container) => {
@@ -344,13 +331,14 @@
       chrome.runtime.sendMessage({ action: "a"}, resolve);
     });
     return DebateTools.modifySelection(async (container) => {
-      container.querySelectorAll("span").forEach((span) => {
+      container.querySelectorAll("*").forEach((span) => {
         const bg = span.style.backgroundColor;
+        span.style.lineHeight/=1.2;
         if (bg && bg !== "transparent") {
           span.style.backgroundColor = DebateTools.settings.highlightColor;
         }
       });
-      return container.innerHTML;
+      return container.innerHTML.innerHTML;
     });
   }
 

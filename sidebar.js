@@ -120,6 +120,9 @@
         if (actionName === "Readmode") {
           await openReadModeWindow();
         }
+        else if (actionName === "Timer") {
+          window.open("https://debatetimer.net/", "Debate Timer", "width=400,height=600");
+        }
         else {
           await DebateTools.runAction(actionName);
         }
@@ -158,27 +161,38 @@
       <div class="sidebar-control-grid">
         <div class="sidebar-button-grid">
 
-        <button class="side-btn" data-action="Paste">Paste (F2)</button>
-        <button class="side-btn" data-action="Condense">Condense (F3)</button>
-        <button class="side-btn" data-action="Pocket">Pocket (F4)</button>
-        <button class="side-btn" data-action="Hat">Hat (F5)</button>
-        <button class="side-btn" data-action="Block">Block (F6)</button>
-        <button class="side-btn" data-action="Tag">Tag (F7)</button>
-        <button class="side-btn" data-action="Cite">Cite (F8)</button>
-        <button class="side-btn" data-action="Underline">Underline (F9)</button>
-        <button class="side-btn" data-action="Emphasis">Emphasis (F10)</button>
-        <button class="side-btn" data-action="Highlight">Highlight (F11)</button>
-        <button class="side-btn" data-action="Clear">Clear (F12)</button>
+        <button class="side-btn" data-action="Paste">Paste (${localStorage.getItem("Paste")})</button>
+        <button class="side-btn" data-action="Condense">Condense (${localStorage.getItem("Condense")})</button>
+        <button class="side-btn" data-action="Pocket">Pocket (${localStorage.getItem("Pocket")})</button>
+        <button class="side-btn" data-action="Hat">Hat (${localStorage.getItem("Hat")})</button>
+        <button class="side-btn" data-action="Block">Block (${localStorage.getItem("Block")})</button>
+        <button class="side-btn" data-action="Tag">Tag (${localStorage.getItem("Tag")})</button>
+        <button class="side-btn" data-action="Cite">Cite (${localStorage.getItem("Cite")})</button>
+        <button class="side-btn" data-action="Underline">Underline (${localStorage.getItem("Underline")})</button>
+        <button class="side-btn" data-action="Emphasis">Emphasis (${localStorage.getItem("Emphasis")})</button>
+        <button class="side-btn" data-action="Highlight">Highlight (${localStorage.getItem("Highlight")})</button>
+        <button class="side-btn" data-action="Clear">Clear (${localStorage.getItem("Clear")})</button>
         <button class="side-btn" data-action="Shrink">Shrink</button>
         <button class="side-btn" data-action="StandardizeHighlights">Standardize Highlights</button>
+        <label class="select-row highlight-select-row" data-action="Highlight">
+        <span>Highlight Color</span>
+        <select id="highlight-color-select" name="HighlightColor" class="sidebar-select">
+        <option style="background-color: yellow;" value="yellow">Y</option>
+        <option style="background-color: lime;" value="lime">G</option>
+        <option style="background-color: cyan;" value="cyan">C</option>
+        <option style="background-color: magenta;" value="magenta">M</option>
+        <option style="background-color: red;" value="red">R</option>
+        </select>
+        </label>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" data-action="Importdocx">Quick Import DOCX</button>
-        <button class="side-btn" data-action="ImportdocxToClipboard">Import DOCX to Clipboard</button>
+        <button class="side-btn" data-action="ImportdocxToClipboard">Import to Clipboard</button>
         <button class="side-btn" data-action="Exportdocx">Export entire as DOCX</button>
         <button class="side-btn" data-action="Exportpdf">Export entire as PDF</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" data-action="Readmode">Read Mode</button>
         <button id="flow-btn" class="side-btn" data-action="Flow">Flow</button>
+        <button class="side-btn" data-action="Timer">Timer</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" data-action="NewSpeechDoc">Create Speech Doc</button>
         <button class="side-btn" data-action="SendSpeechDoc">Send to Speech Doc</button>
@@ -192,20 +206,22 @@
         <div id="folder-tree-host"></div>
       </div>
       <div id="settings" style="display:none;">
-      <button id="settings-close">X</button>
-      <b style="font-size: 17px">Settings</b>
-        <details id="keybindsFormat" open><Summary>Formatting&nbsp<button id="settings-default">Reset Default</button></Summary>
-            Paste:<select name="Paste"style=""><option value="Not  Selected"></option></select><br>
-            Condense:<select name="Condense"style=""><option value="Not  Selected"></option></select><br>
-            Pocket:<select name="Pocket"style=""><option value="Not  Selected"></option></select><br>
-            Hat:<select name="Hat"style=""><option value="Not  Selected"></option></select><br>
-            Block:<select name="Block"style=""><option value="Not  Selected"></option></select><br>
-            Tag:<select name="Tag"style=""><option value="Not  Selected"></option></select><br>
-            Cite:<select name="Cite"style=""><option value="Not  Selected"></option></select><br>
-            Underline:<select name="Underline"style=""><option value="Not  Selected"></option></select><br>
-            Emphasis:<select name="Emphasis"style=""><option value="Not  Selected"></option></select><br>
-            Highlight:<select name="Highlight"style=""><option value="Not  Selected"></option></select><br>
-            Clear:<select name="Clear"style=""><option value="Not  Selected"></option></select><br>
+      <div class="settings-header">
+        <b>Settings</b>
+        <button id="settings-close" type="button">X</button>
+      </div>
+        <details id="keybindsFormat" open><summary><span>Formatting</span><button id="settings-default" type="button">Reset Default</button></summary>
+            <label class="settings-row">Paste<select name="Paste"><option value="Not Selected">Not Selected</option></select></label>
+            <label class="settings-row">Condense<select name="Condense"><option value="Not Selected">Not Selected</option></select></label>
+            <label class="settings-row">Pocket<select name="Pocket"><option value="Not Selected">Not Selected</option></select></label>
+            <label class="settings-row">Hat<select name="Hat"><option value="Not Selected">Not Selected</option></select></label>
+            <label class="settings-row">Block<select name="Block"><option value="Not Selected">Not Selected</option></select></label>
+            <label class="settings-row">Tag<select name="Tag"><option value="Not Selected">Not Selected</option></select></label>
+            <label class="settings-row">Cite<select name="Cite"><option value="Not Selected">Not Selected</option></select></label>
+            <label class="settings-row">Underline<select name="Underline"><option value="Not Selected">Not Selected</option></select></label>
+            <label class="settings-row">Emphasis<select name="Emphasis"><option value="Not Selected">Not Selected</option></select></label>
+            <label class="settings-row">Highlight<select name="Highlight"><option value="Not Selected">Not Selected</option></select></label>
+            <label class="settings-row">Clear<select name="Clear"><option value="Not Selected">Not Selected</option></select></label>
         </details>
       </div>
       <style>
@@ -217,7 +233,6 @@
           padding: 4px 6px;
           cursor: pointer;
           border: 1px solid #dadce0;
-          border-radius: 4px;
           background: white;
           text-align: left;
           text-decoration: none;
@@ -244,6 +259,53 @@
         .sidebar-button-grid hr {
           grid-column: 1 / -1;
         }
+        .select-row {
+          box-sizing: border-box;
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 6px;
+          padding: 4px 6px;
+          border: 1px solid #dadce0;
+          background: #fff;
+          color: #202124;
+          font-size: 11px;
+        }
+        .highlight-select-row {
+          min-height: 24px;
+        }
+        .sidebar-select,
+        #settings select {
+          box-sizing: border-box;
+          min-height: 24px;
+          padding: 2px 22px 2px 7px;
+          border: 1px solid #c9d1d9;
+          border-radius: 4px;
+          background-color: #f8fafc;
+          color: #202124;
+          cursor: pointer;
+          font-family: Calibri, sans-serif;
+          font-size: 11px;
+          outline: none;
+          transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+        }
+        #highlight-color-select {
+          width: auto;
+          min-width: 0;
+          padding-right: 4px;
+        }
+        .sidebar-select:hover,
+        #settings select:hover {
+          background-color: #fff;
+          border-color: #8fa1b3;
+        }
+        .sidebar-select:focus,
+        #settings select:focus {
+          background-color: #fff;
+          border-color: #2d3c80;
+          box-shadow: 0 0 0 2px rgba(45, 60, 128, 0.14);
+        }
         #folder-tree-host {
           flex: 0 0 auto;
           margin-top: auto;
@@ -252,20 +314,71 @@
         #settings {
           position: fixed;
           top: 20%;
-          left: 67%;
-          padding: 10px;
-          border: 2px solid #575757;
+          left: 72%;
+          box-sizing: border-box;
+          padding: 12px;
+          border: 1px solid #c9d1d9;
+          border-radius: 6px;
           background: white;
           width: 300px;
           height: 400px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+          color: #202124;
+          font-size: 12px;
+          overflow: auto;
+        }
+        .settings-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 10px;
+        }
+        .settings-header b {
+          font-size: 17px;
+        }
+        #settings-close {
+          width: 24px;
+          height: 24px;
+          border: 1px solid #dadce0;
+          border-radius: 4px;
+          background: #fff;
+          cursor: pointer;
+          font-size: 11px;
+        }
+        #settings-close:hover {
+          background: #f8f9fa;
         }
         #keybindsFormat {
-          font-size:15px;
+          font-size: 12px;
         }
-        select {
-          background: #fdfeff;
-          cursor:pointer;
-          font-size:11px;          
+        #keybindsFormat summary {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          margin-bottom: 8px;
+          cursor: pointer;
+          font-weight: bold;
+        }
+        #settings-default {
+          border: 1px solid #dadce0;
+          border-radius: 4px;
+          background: #f8fafc;
+          cursor: pointer;
+          padding: 3px 7px;
+          font-size: 11px;
+        }
+        #settings-default:hover {
+          background: #eef2ff;
+          border-color: #9aa7d9;
+        }
+        .settings-row {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 128px;
+          align-items: center;
+          gap: 10px;
+          padding: 5px 0;
+          border-top: 1px solid #f0f2f5;
         }
     </style>  
     `;
@@ -276,18 +389,25 @@
     });
 
     // Settings logic
-    document.getElementById("settings-close").addEventListener("click", () => {
-      document.getElementById("settings").style.display = "none";
-    });
+
+    
     document.getElementById("SettingsBtn").addEventListener("click", () => {
       document.getElementById("settings").style.display = "block";
+    });
+    document.getElementById("settings-close").addEventListener("click", () => {
+      document.getElementById("settings").style.display = "none";
     });
     document.getElementById("settings-default").addEventListener("click",()=> {
       for(let i=0;i<11;i++){
         setKeybind(DebateTools.bindableActions[i], "F"+(i+2))
       }
     })
-
+    document.getElementById("highlight-color-select").addEventListener("change", (e) => {
+      DebateTools.settings.highlightColor = e.target.value;
+      localStorage.setItem("HighlightColor", e.target.value);
+    });
+    document.getElementById("highlight-color-select").value = DebateTools.settings.highlightColor;
+    
     //keybinds
     keybindsFormat = document.getElementById("keybindsFormat")
     keybindsFormat.querySelectorAll("SELECT").forEach((tsKey) => {

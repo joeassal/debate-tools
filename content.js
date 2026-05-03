@@ -1,6 +1,16 @@
 (function (global) {
   const DebateTools = global.DebateTools || {};
 
+  DebateTools.settings = {
+    highlightColor: localStorage.getItem("HighlightColor") || "yellow",
+  };
+  highlightLookup = {
+    yellow: "docs-material-colorpalette-cell-103",
+    lime: "docs-material-colorpalette-cell-104",
+    cyan: "docs-material-colorpalette-cell-105",
+    magenta: "docs-material-colorpalette-cell-109",
+    red: "docs-material-colorpalette-cell-101",
+  }
   DebateTools.actions = {
     Paste: async () => await chrome.runtime.sendMessage({ action: "v", useAlt: false, useShift: true }),
     Condense: async () => await DebateTools.condense(),
@@ -18,7 +28,7 @@
     Highlight: async () => {
       DebateTools.clickDocButton("bgColorButton");
       DebateTools.clickDocButton("bgColorButton");
-      DebateTools.clickDocButton("docs-material-colorpalette-cell-104");
+      DebateTools.clickDocButton(highlightLookup[DebateTools.settings.highlightColor]);
     },
     Clear: async () => {
       DebateTools.clickDocButton("clearFormattingButton");
@@ -46,19 +56,26 @@
   });
   //set keybinds
 
-  DebateTools.runAction = async function runAction(actionName) {
-    if (DebateTools.actions[actionName]) {
-      await DebateTools.actions[actionName]();
-    }
-  };
+
   DebateTools.defaultKeybinds = function defaultKeybinds() {
     for(let i=0;i<11;i++){
       localStorage.setItem(DebateTools.bindableActions[i], "F"+(i+2))
     }
   }
-  if(!DebateTools.keybinds.Paste) {
+
+  // If user is new, do these actions
+  if(localStorage.getItem("hasLoadedBefore") === null) {
     DebateTools.defaultKeybinds()
+    localStorage.setItem("hasLoadedBefore", "true");
   }
+
+
+  DebateTools.runAction = async function runAction(actionName) {
+    if (DebateTools.actions[actionName]) {
+      await DebateTools.actions[actionName]();
+    }
+  };
+
   DebateTools.onKeyDown = async function onKeyDown(e) {
     const actionName = Object.keys(DebateTools.keybinds).find(key => DebateTools.keybinds[key] === e.key);
     if (actionName !== undefined) {
