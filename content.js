@@ -24,34 +24,43 @@
       DebateTools.clickDocButton("clearFormattingButton");
       await chrome.runtime.sendMessage({ action: "0", useAlt: true });
     },
+    Emphasis: () => {DebateTools.clickDocButton("underlineButton");DebateTools.clickDocButton("boldButton")},
     Readmode: async () => await DebateTools.readMode(),
     Importdocx: async () => await DebateTools.ImportDocX(),
+    ImportdocxToClipboard: async () => await DebateTools.ImportDocXtoClipboard(),
     Exportdocx: () => DebateTools.ExportDocX(),
+    Exportpdf: () => DebateTools.ExportPDF(),
     SendSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "sendSpeechDoc" }, (response) => {if(response && !response.success) { alert(response.message); }}),
     NewSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "newSpeechDoc" }, (response) => {if(response && !response.success) { alert(response.message); }}),
+    Shrink: async () => await DebateTools.shrink(),
+    Wikify: async () => await DebateTools.wikify(),
+    StandardizeHighlights: async () => await DebateTools.standardizeHighlights(),
   };
 
-  DebateTools.keybinds = {
-    F2: "Paste",
-    F3: "Condense",
-    F4: "Pocket",
-    F5: "Hat",
-    F6: "Block",
-    F7: "Tag",
-    F8: "Cite",
-    F9: "Underline",
-    F10: "Highlight",
-    F12: "Clear",
-  };
+  //init keybinds
+  DebateTools.keybinds = {};
+  DebateTools.bindableActions = ["Paste", "Condense", "Pocket", "Hat", "Block", "Tag", "Cite", "Underline", "Emphasis", "Highlight", "Clear"];
+  DebateTools.bindableActions.forEach(action => {
+    DebateTools.keybinds[action] =
+      localStorage.getItem(action) || "Not Selected";
+  });
+  //set keybinds
 
   DebateTools.runAction = async function runAction(actionName) {
     if (DebateTools.actions[actionName]) {
       await DebateTools.actions[actionName]();
     }
   };
-
+  DebateTools.defaultKeybinds = function defaultKeybinds() {
+    for(let i=0;i<11;i++){
+      localStorage.setItem(DebateTools.bindableActions[i], "F"+(i+2))
+    }
+  }
+  if(!DebateTools.keybinds.Paste) {
+    DebateTools.defaultKeybinds()
+  }
   DebateTools.onKeyDown = async function onKeyDown(e) {
-    const actionName = DebateTools.keybinds[e.key];
+    const actionName = Object.keys(DebateTools.keybinds).find(key => DebateTools.keybinds[key] === e.key);
     if (actionName !== undefined) {
       e.preventDefault();
       e.stopImmediatePropagation();

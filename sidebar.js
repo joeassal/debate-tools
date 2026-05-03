@@ -155,7 +155,8 @@
         <span>Debate Tools</span>
         <button id="close-sidebar" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">x</button>
       </div>
-      <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0;">
+      <div class="sidebar-control-grid">
+        <div class="sidebar-button-grid">
 
         <button class="side-btn" data-action="Paste">Paste (F2)</button>
         <button class="side-btn" data-action="Condense">Condense (F3)</button>
@@ -165,44 +166,167 @@
         <button class="side-btn" data-action="Tag">Tag (F7)</button>
         <button class="side-btn" data-action="Cite">Cite (F8)</button>
         <button class="side-btn" data-action="Underline">Underline (F9)</button>
-        <button class="side-btn" data-action="Highlight">Highlight (F10)</button>
+        <button class="side-btn" data-action="Emphasis">Emphasis (F10)</button>
+        <button class="side-btn" data-action="Highlight">Highlight (F11)</button>
         <button class="side-btn" data-action="Clear">Clear (F12)</button>
+        <button class="side-btn" data-action="Shrink">Shrink</button>
+        <button class="side-btn" data-action="StandardizeHighlights">Standardize Highlights</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
-        <button class="side-btn" data-action="Importdocx">Open DocX</button>
-        <button class="side-btn" data-action="Exportdocx">Export DocX</button>
+        <button class="side-btn" data-action="Importdocx">Quick Import DOCX</button>
+        <button class="side-btn" data-action="ImportdocxToClipboard">Import DOCX to Clipboard</button>
+        <button class="side-btn" data-action="Exportdocx">Export entire as DOCX</button>
+        <button class="side-btn" data-action="Exportpdf">Export entire as PDF</button>
+        <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" data-action="Readmode">Read Mode</button>
         <button id="flow-btn" class="side-btn" data-action="Flow">Flow</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" data-action="NewSpeechDoc">Create Speech Doc</button>
         <button class="side-btn" data-action="SendSpeechDoc">Send to Speech Doc</button>
+        <button class="side-btn" data-action="Wikify">Wikify</button>
+        <button class="side-btn" data-action="Readmode">Caselist</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
+        <button class="side-btn" id="SettingsBtn">Settings</button>
+        <a class="side-btn" href="https://www.example.com">Help</a>
+        <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
+        </div>
         <div id="folder-tree-host"></div>
+      </div>
+      <div id="settings" style="display:none;">
+      <button id="settings-close">X</button>
+      <b style="font-size: 17px">Settings</b>
+        <details id="keybindsFormat" open><Summary>Formatting&nbsp<button id="settings-default">Reset Default</button></Summary>
+            Paste:<select name="Paste"style=""><option value="Not  Selected"></option></select><br>
+            Condense:<select name="Condense"style=""><option value="Not  Selected"></option></select><br>
+            Pocket:<select name="Pocket"style=""><option value="Not  Selected"></option></select><br>
+            Hat:<select name="Hat"style=""><option value="Not  Selected"></option></select><br>
+            Block:<select name="Block"style=""><option value="Not  Selected"></option></select><br>
+            Tag:<select name="Tag"style=""><option value="Not  Selected"></option></select><br>
+            Cite:<select name="Cite"style=""><option value="Not  Selected"></option></select><br>
+            Underline:<select name="Underline"style=""><option value="Not  Selected"></option></select><br>
+            Emphasis:<select name="Emphasis"style=""><option value="Not  Selected"></option></select><br>
+            Highlight:<select name="Highlight"style=""><option value="Not  Selected"></option></select><br>
+            Clear:<select name="Clear"style=""><option value="Not  Selected"></option></select><br>
+        </details>
       </div>
       <style>
         .side-btn {
-          flex: 1 1 calc(50% - 4px);
+          flex: 0 0 auto;
+          display: block;
+          box-sizing: border-box;
+          width: 100%;
           padding: 4px 6px;
           cursor: pointer;
           border: 1px solid #dadce0;
           border-radius: 4px;
           background: white;
           text-align: left;
+          text-decoration: none;
+          color: inherit;
           font-size: 11px;
           transition: background 0.2s;
         }
         .side-btn:hover { background: #f8f9fa; }
         .side-btn:active { background: #e8eaed; }
+        .sidebar-control-grid {
+          padding: 10px;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+        }
+        .sidebar-button-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+          align-content: start;
+        }
+        .sidebar-button-grid hr {
+          grid-column: 1 / -1;
+        }
         #folder-tree-host {
+          flex: 0 0 auto;
           margin-top: auto;
+          min-height: 0;
+        }
+        #settings {
+          position: fixed;
+          top: 20%;
+          left: 67%;
+          padding: 10px;
+          border: 2px solid #575757;
+          background: white;
+          width: 300px;
+          height: 400px;
+        }
+        #keybindsFormat {
+          font-size:15px;
+        }
+        select {
+          background: #fdfeff;
+          cursor:pointer;
+          font-size:11px;          
         }
     </style>  
     `;
     document.body.appendChild(sidebar);
+
     document.getElementById("flow-btn").addEventListener("click", () => {
       chrome.runtime.sendMessage({ action: "openSidePanel" });
     });
 
+    // Settings logic
+    document.getElementById("settings-close").addEventListener("click", () => {
+      document.getElementById("settings").style.display = "none";
+    });
+    document.getElementById("SettingsBtn").addEventListener("click", () => {
+      document.getElementById("settings").style.display = "block";
+    });
+    document.getElementById("settings-default").addEventListener("click",()=> {
+      for(let i=0;i<11;i++){
+        setKeybind(DebateTools.bindableActions[i], "F"+(i+2))
+      }
+    })
+
+    //keybinds
+    keybindsFormat = document.getElementById("keybindsFormat")
+    keybindsFormat.querySelectorAll("SELECT").forEach((tsKey) => {
+      for(let i=1;i<=12;i++) {
+        option = document.createElement("option")
+        option.value="F"+i
+        option.innerHTML="F"+i
+        tsKey.appendChild(option)
+      }
+      tsKey.value = localStorage.getItem(tsKey.name)
+
+      tsKey.addEventListener('change', (e) => setKeybind(tsKey.name, e.target.value))      
+    })
+    function setKeybind(action, newKey) {
+      // 1. Remove duplicate usage of this key
+      for (const key in DebateTools.keybinds) {
+        if (DebateTools.keybinds[key] === newKey) {
+          DebateTools.keybinds[key] = "Not Selected";
+          syncSelect(key, "Not Selected");
+          localStorage.setItem(key, "Not Selected");
+        }
+      }
+      // 2. Set new value
+      DebateTools.keybinds[action] = newKey;
+      localStorage.setItem(action, newKey);
+      // 3. Sync UI
+      syncSelect(action, newKey);
+    }
+    function syncSelect(action, value) {
+      const select = keybindsFormat.querySelector(
+        `select[name="${action}"]`
+      );
+      if (select) select.value = value;
+    }
+
+    //attaching folder tree
     DebateTools.attachFolderTree();
+
+    //reize handle logic
     const resizeHandle = document.createElement("div");
     resizeHandle.id = "sidebar-resize-handle";
     resizeHandle.style.cssText = `

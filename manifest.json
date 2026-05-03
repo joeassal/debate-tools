@@ -19,7 +19,7 @@
     "content_scripts": [
         {
             "matches": ["https://docs.google.com/document/d/*"],
-            "js": ["docshift.min.js", "utils.js", "folder-tree.js", "sidebar.js", "content.js"],
+            "js": ["utils.js", "folder-tree.js", "sidebar.js", "content.js"],
             "run_at": "document_idle",
             "all_frames": false
         }

@@ -21,11 +21,11 @@
           position: relative;
           padding: 10px;
           border: 1px solid #a6bed1;
-          margin-top: auto;
           height: 23vh;
           min-height: 180px;
           max-height: 420px;
           overflow: hidden;
+          box-sizing: border-box;
         }
         #tree {
           height: 100%;
@@ -57,20 +57,49 @@
 
     const root = host.querySelector("#tree");
     const folderStorageKey = "debateTools.folderTree";
+    const folderBlockStorageKey = "debateTools.folderBlocks";
+    let folderBlocks = loadFolderBlocks();
 
-    function getFolderTree() {
+    function loadFolderBlocks() {
+        try {
+            return JSON.parse(localStorage.getItem(folderBlockStorageKey)) || {};
+        } catch (error) {
+            console.warn("Could not load saved folder blocks", error);
+            return {};
+        }
+    }
+
+    function createBlockId() {
+        if (crypto && crypto.randomUUID) return crypto.randomUUID();
+        return "block-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+    }
+
+    function getFolderTree(includeBlocks = false) {
         return [...root.children]
             .filter((child) => child.tagName === "DETAILS")
-            .map(serializeFolder);
+            .map((child) => serializeFolder(child, includeBlocks));
     }
 
     function saveFolderTree() {
         const tree = getFolderTree();
+        const usedBlockIds = new Set();
+        collectBlockIds(tree, usedBlockIds);
+        folderBlocks = Object.fromEntries(
+            Object.entries(folderBlocks).filter(([blockId]) => usedBlockIds.has(blockId))
+        );
         localStorage.setItem(folderStorageKey, JSON.stringify(tree));
+        localStorage.setItem(folderBlockStorageKey, JSON.stringify(folderBlocks));
+    }
+
+    function collectBlockIds(nodes, usedBlockIds) {
+        nodes.forEach((node) => {
+            if (node.type === "file" && node.blockId) usedBlockIds.add(node.blockId);
+            if (node.children) collectBlockIds(node.children, usedBlockIds);
+        });
     }
 
     function exportFolderTree() {
-        const json = JSON.stringify(getFolderTree(), null, 2);
+        const json = JSON.stringify(getFolderTree(true), null, 2);
         const blob = new Blob([json], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
@@ -90,6 +119,7 @@
             throw new Error("Imported folder tree must be an array.");
         }
 
+        folderBlocks = {};
         root.replaceChildren();
         tree.forEach((node) => root.appendChild(createTreeNode(node)));
         saveFolderTree();
@@ -115,17 +145,24 @@
         input.click();
     }
 
-    function serializeFolder(folder) {
+    function serializeFolder(folder, includeBlocks = false) {
         const children = [...folder.children]
             .filter((child) => child.tagName !== "SUMMARY")
             .map((child) => {
-                if (child.tagName === "DETAILS") return serializeFolder(child);
+                if (child.tagName === "DETAILS") return serializeFolder(child, includeBlocks);
 
-                return {
+                const blockId = child.dataset.blockId;
+                const fileNode = {
                     type: "file",
                     name: child.dataset.name || child.textContent,
-                    block: child.dataset.block
+                    blockId
                 };
+
+                if (includeBlocks) {
+                    fileNode.block = folderBlocks[blockId] || "";
+                }
+
+                return fileNode;
             });
 
         return {
@@ -161,7 +198,7 @@
             return folder;
         }
 
-        return createFile(node.name, node.block);
+        return createFile(node.name, node.block, node.blockId);
     }
 
     function createFolder(name) {
@@ -233,11 +270,17 @@
         return folder;
     }
 
-    function createFile(name, blockData) {
+    function createFile(name, blockData, existingBlockId) {
         const file = document.createElement("div");
+        const blockId = existingBlockId || createBlockId();
+
+        if (blockData !== undefined) {
+          folderBlocks[blockId] = blockData;
+        }
+
         file.dataset.type = "file";
         file.dataset.name = name;
-        file.dataset.block = blockData;
+        file.dataset.blockId = blockId;
         file.style.marginLeft = "20px";
 
         const fileLabel = document.createElement("button");
@@ -252,7 +295,7 @@
           e.stopPropagation();
           DebateTools.focusDocsEditor();
           await new Promise((resolve) => setTimeout(resolve, 100));
-          await DebateTools.pasteHTML(file.dataset.block);
+          await DebateTools.pasteHTML(folderBlocks[file.dataset.blockId] || "");
         });
 
         const deleteBtn = document.createElement("button");
@@ -265,6 +308,7 @@
             if(confirm("Are you sure you want to delete this folder and all its contents?")) {
                 e.preventDefault();
                 e.stopPropagation();
+                delete folderBlocks[file.dataset.blockId];
                 file.remove();
                 saveFolderTree();
             }

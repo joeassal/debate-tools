@@ -136,80 +136,90 @@ async function focusTabAndEditor(tabId) {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("Received message in background:", message);
     (async () => {
-        if (message.action === "openSidePanel") {
-            await chrome.sidePanel.open({
-            windowId: sender.tab.windowId
-            });
-            return;
-        }
-        else if(message.action == "newSpeechDoc") {
-            if(speechDocID) {
+        try {
+            if (message.action === "openSidePanel") {
+                await chrome.sidePanel.open({
+                windowId: sender.tab.windowId
+                });
+                sendResponse({ success: true });
+                return;
+            }
+            else if (message.action === "loadDocshift") {
+                await chrome.scripting.executeScript({
+                    target: { tabId: sender.tab.id },
+                    files: ["docshift.min.js"],
+                });
+                sendResponse({ success: true });
+                return;
+            }
+            else if(message.action == "newSpeechDoc") {
+                if(speechDocID) {
+                    try {
+                        await chrome.tabs.get(speechDocID);
+                        sendResponse({ success: false, message: "Sorry! You can only have one speech doc open at a time, new implementation coming soon. \nFor now, you can use google docs subtabs for multiple speeches." });
+                        return;
+                    } catch (e) {}
+                }
+                const speechWindow = await new Promise((resolve) => {
+                    chrome.windows.create({ 
+                        url: "https://docs.google.com/document/create",
+                        type: "popup", // This creates the separate window without the tab bar
+                        width: 900,
+                        height: 700
+                    }, resolve);
+                });
+                speechDocID = speechWindow.tabs[0].id; 
+                sendResponse({ success: true });
+            }
+            else if(message.action == "sendSpeechDoc") {
+                if(!speechDocID) { sendResponse({ success: false, message: "There is no open speech document to send to. Create a new speech document first." }); return; }
                 try {
                     await chrome.tabs.get(speechDocID);
-                    sendResponse({ success: false, message: "Sorry! You can only have one speech doc open at a time, new implementation coming soon. \nFor now, you can use google docs subtabs for multiple speeches." });
-                    return;
-                } catch (e) {}
+                } catch (e) {
+                    sendResponse({ success: false, message: "There is no open speech document to send to. Create a new speech document first." }); return;
+                }
+                try {
+                    await focusTabAndEditor(sender.tab.id);
+                    await sendUniversalShortcut(sender.tab.id, "c");
+                    await chrome.tabs.update(speechDocID, { active: true });
+                    setTimeout(async () => {
+                        await focusTabAndEditor(speechDocID);
+                        await sendUniversalShortcut(speechDocID, "v");
+                    }, 350); // Delay to ensure the new tab is fully focused and editor is ready
+                    sendResponse({ success: true });
+                } catch (error) {
+                    console.error("Error sending speech document:", error);
+                    sendResponse({ success: false, message: "Failed to send speech document" });
+                }
             }
-            const speechWindow = await new Promise((resolve) => {
-                chrome.windows.create({ 
-                    url: "https://docs.google.com/document/create",
-                    type: "popup", // This creates the separate window without the tab bar
-                    width: 900,
-                    height: 700
-                }, resolve);
-            });
-            speechDocID = speechWindow.tabs[0].id; 
-            sendResponse({ success: true });
-        }
-        else if(message.action == "sendSpeechDoc") {
-            if(!speechDocID) { sendResponse({ success: false, message: "There is no open speech document to send to. Create a new speech document first." }); return; }
-            try {
-                await chrome.tabs.get(speechDocID);
-            } catch (e) {
-                sendResponse({ success: false, message: "There is no open speech document to send to. Create a new speech document first." }); return;
-            }
-            try {
-                await focusTabAndEditor(sender.tab.id);
-                await sendUniversalShortcut(sender.tab.id, "c");
-                await chrome.tabs.update(speechDocID, { active: true });
-                setTimeout(async () => {
-                    await focusTabAndEditor(speechDocID);
-                    await sendUniversalShortcut(speechDocID, "v");
-                }, 350); // Delay to ensure the new tab is fully focused and editor is ready
+            else if(message.action == "tabThenPaste") {
+                const newTab = await new Promise((resolve) => {
+                    chrome.tabs.create({ url: "https://docs.google.com/document/create" }, resolve);
+                });
+                
+                await new Promise((resolve) => {
+                    const listener = (tabId, changeInfo, tab) => {
+                        if (changeInfo.status === 'complete' && tab.url.includes('/document/d/')) {
+                            chrome.tabs.onUpdated.removeListener(listener);
+                            // Add delay to let the editor fully load
+                            setTimeout(async () => {
+                                await focusTabAndEditor(tabId);
+                                await sendUniversalShortcut(tabId, "v", false, false);
+                                resolve();
+                            }, 480); // 2 second delay
+                        }
+                    };
+                    chrome.tabs.onUpdated.addListener(listener);
+                });
                 sendResponse({ success: true });
-            } catch (error) {
-                console.error("Error sending speech document:", error);
-                sendResponse({ success: false, message: "Failed to send speech document" });
+            } else {
+                await sendUniversalShortcut(sender.tab.id, message.action, message.useShift, message.useAlt);
+                sendResponse({ success: true });
             }
+        } catch (error) {
+            console.error("Error in message listener:", error);
+            sendResponse({ success: false, error: error.message });
         }
-        else if(message.action == "tabThenPaste") {
-            const newTab = await new Promise((resolve) => {
-                chrome.tabs.create({ url: "https://docs.google.com/document/create" }, resolve);
-            });
-            
-            await new Promise((resolve) => {
-                const listener = (tabId, changeInfo, tab) => {
-                    if (changeInfo.status === 'complete' && tab.url.includes('/document/d/')) {
-                        chrome.tabs.onUpdated.removeListener(listener);
-                        // Add delay to let the editor fully load
-                        setTimeout(async () => {
-                            await focusTabAndEditor(tabId);
-                            await sendUniversalShortcut(tabId, "v", false, false);
-                            resolve();
-                        }, 2000); // 2 second delay
-                    }
-                };
-                chrome.tabs.onUpdated.addListener(listener);
-            });
-            sendResponse({ success: true });
-        } else {
-            await sendUniversalShortcut(sender.tab.id, message.action, message.useShift, message.useAlt);
-            sendResponse({ success: true });
-        }
-        // } catch (error) {
-        //     console.error("Error in message listener:", error);
-        //     sendResponse({ error: error.message });
-        // }
     })();
     
     return true; // Keep the channel open for async response
