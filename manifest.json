@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Copy Logger",
+    "name": "CardFlow - Debate Tools for Google Docs",
     "version": "1.0",
     "host_permissions": [
         "https://docs.google.com/document/d/*",

@@ -201,6 +201,11 @@
         return createFile(node.name, node.block, node.blockId);
     }
 
+    function getFileBlock(file) {
+        const blockId = file.dataset.blockId;
+        return folderBlocks[blockId] || file.dataset.block || "";
+    }
+
     function createFolder(name) {
         const folder = document.createElement("details");
         folder.dataset.name = name;
@@ -276,6 +281,9 @@
 
         if (blockData !== undefined) {
           folderBlocks[blockId] = blockData;
+          file.dataset.block = blockData;
+        } else if (folderBlocks[blockId] === undefined) {
+          folderBlocks[blockId] = "";
         }
 
         file.dataset.type = "file";
@@ -295,7 +303,7 @@
           e.stopPropagation();
           DebateTools.focusDocsEditor();
           await new Promise((resolve) => setTimeout(resolve, 100));
-          await DebateTools.pasteHTML(folderBlocks[file.dataset.blockId] || "");
+          await DebateTools.pasteHTML(getFileBlock(file));
         });
 
         const deleteBtn = document.createElement("button");

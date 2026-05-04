@@ -144,7 +144,6 @@
       });
     });
   }
-
   DebateTools.injectSidebar = function injectSidebar() {
     if (document.getElementById("doc-extension-sidebar")) {
       document.getElementById("doc-extension-sidebar").style.display = "flex";
@@ -242,6 +241,8 @@
             <label class="settings-row">Cut Text in Read Mode?<input type="checkbox" name="cutTextReadMode"></label>
             <label class="settings-row">Use pilcrows on Condense?<input type="checkbox" name="usePilcrows"></label>
             <label class="settings-row">New window when making speech doc?<input type="checkbox" name="speechDocNewWindow"></label>
+            <label class="settings-row">Show Virtual Tub?<input type="checkbox" name="showFolderTree"></label>
+            <label class="settings-row">School Name on Wiki<input name="userSchool"></label>
         </details>
         <details class="settings-detail" id="Caselist"><summary><span>Caselist Info</span></summary>
             <label class="settings-row">Format<select id="userFormat">
@@ -419,6 +420,7 @@
     function changeSetting(key, value) {
       DebateTools.settings[key] = value
       localStorage.setItem(key, value);
+      if (key === "showFolderTree") updateFolderTreeVisibility(value);
     }
     
     document.getElementById("SettingsBtn").addEventListener("click", () => {
@@ -446,6 +448,15 @@
         input.addEventListener("change", (e) => changeSetting(input.name, e.target.value))
       }
     })
+    function updateFolderTreeVisibility(showFolderTree) {
+      const folderTreeHost = document.getElementById("folder-tree-host");
+      if (!folderTreeHost) return;
+
+      folderTreeHost.style.display = showFolderTree ? "" : "none";
+      if (showFolderTree && !folderTreeHost.hasChildNodes()) {
+        DebateTools.attachFolderTree();
+      }
+    }
 
     //keybinds
     keybindsFormat = document.getElementById("keybindsFormat")
@@ -486,7 +497,10 @@
 
 
     //attaching folder tree
-    DebateTools.attachFolderTree();
+    if (DebateTools.settings.showFolderTree) {
+      DebateTools.attachFolderTree();
+    }
+    updateFolderTreeVisibility(DebateTools.settings.showFolderTree);
 
     //reize handle logic
     const resizeHandle = document.createElement("div");

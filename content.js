@@ -6,6 +6,7 @@
     cutTextReadMode: localStorage.getItem("cutTextReadMode") !== "false",
     usePilcrows: localStorage.getItem("usePilcrows") !== "false",
     speechDocNewWindow: localStorage.getItem("speechDocNewWindow") !== "false",
+    showFolderTree: localStorage.getItem("showFolderTree") !== "false",
 
     userName: localStorage.getItem("userName") || "",
     userSchool: localStorage.getItem("userSchool") || "",
@@ -55,7 +56,9 @@
   };
 
   //init keybinds
-  DebateTools.keybinds = {};
+  DebateTools.keybinds = {
+    SendSpeechDoc: "`"
+  };
   DebateTools.bindableActions = ["Paste", "Condense", "Pocket", "Hat", "Block", "Tag", "Cite", "Underline", "Emphasis", "Highlight", "Clear"];
   DebateTools.bindableActions.forEach(action => {
     DebateTools.keybinds[action] =
@@ -76,6 +79,7 @@
     localStorage.setItem("cutTextReadMode", "true");
     localStorage.setItem("usePilcrows", "true");
     localStorage.setItem("speechDocNewWindow", "true");
+    localStorage.setItem("showFolderTree", "true");
     localStorage.setItem("hasLoadedBefore", "true");
   }
 

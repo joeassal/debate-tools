@@ -1,8 +1,11 @@
 const storageKey = "debateTools.flowSheet";
-const columns = ["1AC", "1NC", "2AC", "2NC", "1AR", "1NR", "2AR", "2NR"];
+const speechOrderKey = "debateTools.speechOrder";
+const defaultColumns = ["1AC", "1NC", "2AC", "2NC", "1AR", "1NR", "2AR", "2NR"];
+let newFlowColumns = loadSpeechOrder();
 const minRows = 18;
 const sheet = document.getElementById("sheet");
 const tabs = document.getElementById("tabs");
+const speechOrderInput = document.getElementById("speechOrder");
 const addRowButton = document.getElementById("add-row");
 const addTabButton = document.getElementById("add-tab");
 const deleteTabButton = document.getElementById("delete-tab");
@@ -10,20 +13,41 @@ const clearFlowsButton = document.getElementById("clear-flows");
 
 let workbook = loadFlow();
 
-sheet.style.gridTemplateColumns = `24px repeat(${columns.length}, minmax(110px, 1fr))`;
+speechOrderInput.value = newFlowColumns.join(",");
+saveFlow();
 
-function createBlankRows() {
+function parseSpeechOrder(value) {
+  const parsedColumns = String(value || "")
+    .split(",")
+    .map((column) => column.trim())
+    .filter(Boolean);
+
+  return parsedColumns.length ? parsedColumns : defaultColumns;
+}
+
+function loadSpeechOrder() {
+  return parseSpeechOrder(localStorage.getItem(speechOrderKey));
+}
+
+function updateSheetColumns(columns) {
+  sheet.style.gridTemplateColumns = `24px repeat(${columns.length}, minmax(110px, 1fr))`;
+}
+
+function createBlankRows(columns) {
   return Array.from({ length: minRows }, () => Array(columns.length).fill(""));
 }
 
 function createTab(name) {
+  const columns = newFlowColumns.slice();
+
   return {
     name,
-    rows: createBlankRows(),
+    columns,
+    rows: createBlankRows(columns),
   };
 }
 
-function normalizeRows(rows) {
+function normalizeRows(rows, columns) {
   const normalizedRows = Array.isArray(rows) ? rows : [];
 
   return normalizedRows.map((row) => {
@@ -41,6 +65,10 @@ function getActiveTab() {
   return workbook.tabs[workbook.activeTabIndex];
 }
 
+function getActiveColumns() {
+  return getActiveTab().columns;
+}
+
 function getActiveRows() {
   return getActiveTab().rows;
 }
@@ -50,19 +78,26 @@ function loadFlow() {
     const saved = JSON.parse(localStorage.getItem(storageKey));
 
     if (Array.isArray(saved) && saved.length) {
+      const columns = newFlowColumns.slice();
+
       return {
         activeTabIndex: 0,
-        tabs: [{ name: "Main", rows: normalizeRows(saved) }],
+        tabs: [{ name: "Main", columns, rows: normalizeRows(saved, columns) }],
       };
     }
 
     if (saved && Array.isArray(saved.tabs) && saved.tabs.length) {
       return {
         activeTabIndex: Math.min(saved.activeTabIndex || 0, saved.tabs.length - 1),
-        tabs: saved.tabs.map((tab, index) => ({
-          name: tab.name || `Flow ${index + 1}`,
-          rows: Array.isArray(tab.rows) ? normalizeRows(tab.rows) : createBlankRows(),
-        })),
+        tabs: saved.tabs.map((tab, index) => {
+          const columns = parseSpeechOrder(tab.columns || newFlowColumns);
+
+          return {
+            name: tab.name || `Flow ${index + 1}`,
+            columns,
+            rows: Array.isArray(tab.rows) ? normalizeRows(tab.rows, columns) : createBlankRows(columns),
+          };
+        }),
       };
     }
   } catch (error) {
@@ -87,6 +122,7 @@ function resetWorkbook() {
 }
 
 function ensureCell(row, col) {
+  const columns = getActiveColumns();
   const data = getActiveRows();
 
   while (row >= data.length) {
@@ -98,7 +134,7 @@ function ensureCell(row, col) {
 }
 
 function addRow(index = getActiveRows().length) {
-  getActiveRows().splice(index, 0, Array(columns.length).fill(""));
+  getActiveRows().splice(index, 0, Array(getActiveColumns().length).fill(""));
   render();
   saveFlow();
 }
@@ -145,7 +181,7 @@ function focusCell(row, col) {
   const cell = sheet.querySelector(`[data-row="${row}"][data-col="${col}"]`);
   if (cell) {
     cell.focus();
-    cell.select();
+    moveCursorToEnd(cell);
   }
 }
 
@@ -174,8 +210,10 @@ function renderTabs() {
 }
 
 function renderSheet() {
+  const columns = getActiveColumns();
   const data = getActiveRows();
 
+  updateSheetColumns(columns);
   sheet.innerHTML = "";
   sheet.appendChild(makeHeaderCell("", "corner"));
 
@@ -219,9 +257,27 @@ function makeHeaderCell(text, className) {
   return cell;
 }
 
+function moveCursorToEnd(cell) {
+  const end = cell.value.length;
+  cell.setSelectionRange(end, end);
+}
+
 function handleCellKeydown(event) {
   const row = Number(event.currentTarget.dataset.row);
   const col = Number(event.currentTarget.dataset.col);
+
+  if (event.key === "Enter") {
+    event.preventDefault();
+
+    if (event.shiftKey) {
+      addRow(row + 1);
+    } else if (row + 1 >= getActiveRows().length) {
+      addRow(getActiveRows().length);
+    }
+
+    focusCell(row + 1, col);
+    return;
+  }
 
   if (event.key === "Tab") {
     event.preventDefault();
@@ -240,12 +296,19 @@ function handleCellKeydown(event) {
   if (!movement) return;
 
   event.preventDefault();
+  const columns = getActiveColumns();
   const nextRow = Math.max(0, row + movement[0]);
   const nextCol = Math.max(0, Math.min(columns.length - 1, col + movement[1]));
 
   if (nextRow >= getActiveRows().length) addRow(getActiveRows().length);
   focusCell(nextRow, nextCol);
 }
+
+speechOrderInput.addEventListener("change", (e) => {
+  newFlowColumns = parseSpeechOrder(e.target.value);
+  speechOrderInput.value = newFlowColumns.join(",");
+  localStorage.setItem(speechOrderKey, newFlowColumns.join(","));
+});
 
 addRowButton.addEventListener("click", () => {
   addRow();
