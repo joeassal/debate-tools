@@ -117,6 +117,9 @@
     const editorIframe = document.querySelector(".docs-texteventtarget-iframe");
     if (editorIframe) {
       editorIframe.contentWindow.focus();
+      if (editorIframe.contentDocument && editorIframe.contentDocument.body) {
+        editorIframe.contentDocument.body.focus();
+      }
       editorIframe.focus();
       return true;
     }

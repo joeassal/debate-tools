@@ -439,7 +439,7 @@
     document.getElementById("highlight-color-select").addEventListener("change", (e) => changeSetting("highlightColor", e.target.value));
     document.getElementById("userFormat").value = DebateTools.settings.userFormat;
     document.getElementById("userFormat").addEventListener("change", (e) => changeSetting("userFormat", e.target.value));
-    document.querySelectorAll('INPUT').forEach((input) => {
+    sidebar.querySelectorAll('INPUT').forEach((input) => {
       if(input.type=="checkbox") {
         input.checked = DebateTools.settings[input.name]
         input.addEventListener("change", (e) => changeSetting(input.name, e.target.checked))
