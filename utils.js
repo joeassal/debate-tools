@@ -2,35 +2,139 @@
   const DebateTools = global.DebateTools || {};
 
 
+  DebateTools.clickElement = function clickElement(element) {
+    if (!element) return false;
+
+    element.dispatchEvent(
+      new MouseEvent("mousedown", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      })
+    );
+
+    element.dispatchEvent(
+      new MouseEvent("mouseup", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      })
+    );
+
+    element.dispatchEvent(
+      new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      })
+    );
+
+    return true;
+  };
+
+  DebateTools.hoverElement = function hoverElement(element) {
+    if (!element) return false;
+
+    ["mouseover", "mouseenter", "mousemove"].forEach((eventType) => {
+      element.dispatchEvent(
+        new MouseEvent(eventType, {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        })
+      );
+    });
+
+    return true;
+  };
+
+  DebateTools.sleep = function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
+
   DebateTools.clickDocButton = function clickDocButton(buttonId) {
     const buttonEl = document.getElementById(buttonId);
+    DebateTools.clickElement(buttonEl)
+  }
+  DebateTools.waitForElement = function waitForElement(selector, timeout = 500) {
+    const existing = document.querySelector(selector);
+    if (existing) return Promise.resolve(existing);
 
-    if (buttonEl) {
-      buttonEl.dispatchEvent(
-        new MouseEvent("mousedown", {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        })
-      );
+    return new Promise((resolve) => {
+      const observer = new MutationObserver(() => {
+        const element = document.querySelector(selector);
+        if (!element) return;
 
-      buttonEl.dispatchEvent(
-        new MouseEvent("mouseup", {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        })
-      );
+        clearTimeout(timer);
+        observer.disconnect();
+        resolve(element);
+      });
 
-      buttonEl.dispatchEvent(
-        new MouseEvent("click", {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        })
-      );
-    }
+      const timer = setTimeout(() => {
+        observer.disconnect();
+        resolve(null);
+      }, timeout);
+
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
   };
+
+  DebateTools.clickDocsMenuShortcut = async function clickDocsMenuShortcut(shortcutLabel) {
+    const shortcutSelector = `span[aria-label="${shortcutLabel}"]`;
+    let shortcutSpan = document.querySelector(shortcutSelector);
+
+    if (!shortcutSpan) {
+      DebateTools.clickDocButton("docs-edit-menu");
+      shortcutSpan = await DebateTools.waitForElement(shortcutSelector);
+    }
+
+    const menuButton = shortcutSpan && shortcutSpan.parentElement && shortcutSpan.parentElement.parentElement;
+
+    return DebateTools.clickElement(menuButton);
+  };
+
+  DebateTools.clickHeader = async function clickHeader(shortcutLabel) { 
+    DebateTools.clickDocButton("headingStyleSelect");
+
+    const headingMenuItemSelector = ".goog-menuitem.goog-option.goog-submenu.docs-submenuitem.apps-menuitem";
+    const firstMenuItem = await DebateTools.waitForElement(headingMenuItemSelector);
+    if (!firstMenuItem) return false;
+
+    const menuItems = document.querySelectorAll(headingMenuItemSelector);
+
+    for (const item of menuItems) {
+      if(item.innerText.includes("Heading") || item.innerText.includes("Normal")) {
+        DebateTools.hoverElement(item);
+        await DebateTools.sleep(10);
+      }
+    }
+
+    const shortcutSpan = await DebateTools.waitForElement(
+      `span[aria-label="${shortcutLabel}"]`
+    );
+    const menuButton = shortcutSpan && shortcutSpan.parentElement && shortcutSpan.parentElement.parentElement;
+
+    return DebateTools.clickElement(menuButton);
+  };
+  DebateTools.formatHeaderStyles = async () => {
+    const startCB2 = await navigator.clipboard.read();
+    const h1 = `<span id=""><h1 dir="ltr" style="text-align: center;border-left:solid #000000 3pt;border-right:solid #000000 3pt;border-top:solid #000000 3pt;border-bottom:solid #000000 3pt;margin-top:20pt;margin-bottom:6pt;padding:2pt 2pt 2pt 2pt;"><span style="font-size: ${DebateTools.getSetting("h1Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Heading 1 (pocket)</span></h1><div><span style="font-size: 11pt; font-family: Calibri, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"><br></span></div></span>`
+    const h2 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h2Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 2 (hat)</span></span><br>`
+    const h3 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h3Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 3 (block)</span></span><br>`
+    const h4 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h4Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Heading 4 (tag)</span></span><br>`
+    const nt = `<span id=""><span style="font-size: ${DebateTools.getSetting("ntextSize")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Highlight each heading and on the tool bar click "Heading X" -> "Update 'Heading X' to match" for each heading. Then do Options -> Save as my default styles (Normal Text) Then do Options -> Use Default to change formatting</span></span><br>`
+    const styles=[h1,h2,h3,h4,nt]
+    await DebateTools.clickDocsMenuShortcut("Shift+F11")
+
+    for (const style of styles) {
+      const blob = new Blob([style], { type: "text/html" });
+      await navigator.clipboard.write([new ClipboardItem({ "text/html": blob })]);
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      await DebateTools.clickDocsMenuShortcut("Ctrl+V")
+    }
+
+    await navigator.clipboard.write(startCB2);
+  }
 
   DebateTools.checkClipboard = async function checkClipboard() {
     try {
@@ -46,41 +150,37 @@
     }
     return "";
   };
+
+  //deprecated
   DebateTools.sendShortcut = async function sendShortcut(action, useShift = false, useAlt = false) {
     await new Promise((resolve) => {
       chrome.runtime.sendMessage({ action, useShift, useAlt }, resolve);
     });
   };
+  
   DebateTools.getSelection = async function getSelection() {
-    await DebateTools.sendShortcut("c");
+    await DebateTools.clickDocsMenuShortcut("Ctrl+C")
     const CB = await DebateTools.checkClipboard();
     return CB;
   };
   DebateTools.pasteHTML = async function pasteHTML(html) {
+    const startCB2 = await navigator.clipboard.read()
     if (html) {
       const blob = new Blob([html], { type: "text/html" });
       await navigator.clipboard.write([new ClipboardItem({ "text/html": blob })]);
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
-    await DebateTools.sendShortcut("v");
+    await DebateTools.clickDocsMenuShortcut("Ctrl+V");
+    await navigator.clipboard.write(startCB2);
   }
 
-  DebateTools.ensureDocshiftLoaded = async function ensureDocshiftLoaded() {
-    if (global.docshift) return global.docshift;
 
-    const response = await chrome.runtime.sendMessage({ action: "loadDocshift" });
-    if (!response || !response.success || !global.docshift) {
-      throw new Error("Could not load docshift.");
-    }
-
-    return global.docshift;
-  };
 
   DebateTools.modifySelection = async function modifySelection(callback) {
     const startCB = await DebateTools.checkClipboard();
     const startCB2 = await navigator.clipboard.read();
 
-    await DebateTools.sendShortcut("c");
+    await DebateTools.clickDocsMenuShortcut("Ctrl+C")
 
     let newCB = await DebateTools.checkClipboard();
     if (startCB === newCB) {
@@ -96,7 +196,8 @@
     const blob = new Blob([modifiedHtml ?? container.innerHTML], { type: "text/html" });
     await navigator.clipboard.write([new ClipboardItem({ "text/html": blob })]);
 
-    await DebateTools.sendShortcut("v");
+    await DebateTools.clickDocsMenuShortcut("Ctrl+V")
+    
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     await navigator.clipboard.write(startCB2);
@@ -108,6 +209,7 @@
         const size = span.style.fontSize;
         const underline = span.style.textDecoration;
         const bg = span.style.backgroundColor;
+        
         if (!(underline && underline.includes("underline") || bg && bg!=="transparent")) {
           const newSize = parseFloat(size) - 1;
           span.style.fontSize = newSize + "px";
@@ -120,7 +222,7 @@
     return DebateTools.modifySelection(async (container) => {
       const blocks = container.querySelectorAll("p, div, br");
 
-      if(DebateTools.settings.usePilcrows) blocks.forEach((el) => {
+      if(DebateTools.getSetting("usePilcrows")) blocks.forEach((el) => {
         const pilcrow = document.createElement("span");
         pilcrow.innerText = " ¶ ";
         pilcrow.style.color = "#777";
@@ -192,8 +294,8 @@
     const startCB = await DebateTools.checkClipboard();
     const startCB2 = await navigator.clipboard.read();
 
-    await DebateTools.sendShortcut("a");
-    await DebateTools.sendShortcut("c");
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+    await DebateTools.clickDocsMenuShortcut("Ctrl+C")
 
     const newCB = await DebateTools.checkClipboard();
     if (startCB == newCB) {
@@ -205,12 +307,21 @@
 
     await navigator.clipboard.write(startCB2);
 
-    if(!DebateTools.settings.cutTextReadMode) return container.innerHTML
+    if(!DebateTools.getSetting("cutTextReadMode")) return container.innerHTML
 
     const pgs = container.querySelector("b");
     return [...pgs.children].map(getTrimmedReadModeParagraph).join("");
   };
+  DebateTools.ensureDocshiftLoaded = async function ensureDocshiftLoaded() {
+    if (global.docshift) return global.docshift;
 
+    const response = await chrome.runtime.sendMessage({ action: "loadDocshift" });
+    if (!response || !response.success || !global.docshift) {
+      throw new Error("Could not load docshift.");
+    }
+
+    return global.docshift;
+  };
   DebateTools.ImportDocX = async function ImportDocX() {
     try {
       const [fileHandle] = await window.showOpenFilePicker({
@@ -270,7 +381,7 @@
   };
 
   DebateTools.wikify = async function wikify() {
-    await DebateTools.sendShortcut("c");
+    await DebateTools.clickDocsMenuShortcut("Ctrl+C")
     let newCB = await DebateTools.checkClipboard();
     newCB = newCB.replace(/\bid=(["']).*?\1/g, 'id=""');
     const container = document.createElement("div");
@@ -322,13 +433,13 @@
   };
 
   DebateTools.standardizeHighlights = async () => {
-    await DebateTools.sendShortcut("a");
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
     return DebateTools.modifySelection(async (container) => {
       container.querySelectorAll("*").forEach((span) => {
         const bg = span.style.backgroundColor;
         span.style.lineHeight/=1.2;
         if (bg && bg !== "transparent") {
-          span.style.backgroundColor = DebateTools.settings.highlightColor;
+          span.style.backgroundColor = DebateTools.getSetting("highlightColor");
         }
       });
       return container.innerHTML.innerHTML;

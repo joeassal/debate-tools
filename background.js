@@ -133,6 +133,31 @@ async function focusTabAndEditor(tabId) {
     await new Promise((resolve) => setTimeout(resolve, 150));
 }
 
+async function clickDocsMenuShortcut(tabId, shortcutLabel) {
+    let response;
+    let lastError;
+
+    for (let attempt = 0; attempt < 20; attempt++) {
+        try {
+            response = await chrome.tabs.sendMessage(tabId, {
+                action: "clickDocsMenuShortcut",
+                shortcutLabel
+            });
+            if (response && response.success) return;
+        } catch (error) {
+            lastError = error;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+
+    throw new Error(
+        response && response.error ||
+        lastError && lastError.message ||
+        `Could not click Docs menu shortcut ${shortcutLabel}`
+    );
+}
+
 async function openCleanCaseListWindow(url) {
     const caseListWindow = await new Promise((resolve) => {
         chrome.windows.create({
@@ -243,12 +268,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 }
                 try {
                     await focusTabAndEditor(sender.tab.id);
-                    await sendUniversalShortcut(sender.tab.id, "c");
-                    await chrome.tabs.update(speechDocID, { active: true });
-                    setTimeout(async () => {
-                        await focusTabAndEditor(speechDocID);
-                        await sendUniversalShortcut(speechDocID, "v");
-                    }, 350); // Delay to ensure the new tab is fully focused and editor is ready
+                    await clickDocsMenuShortcut(sender.tab.id, "Ctrl+C");
+                    await focusTabAndEditor(speechDocID);
+                    await clickDocsMenuShortcut(speechDocID, "Ctrl+V");
                     sendResponse({ success: true });
                 } catch (error) {
                     console.error("Error sending speech document:", error);
@@ -260,15 +282,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     chrome.tabs.create({ url: "https://docs.google.com/document/create" }, resolve);
                 });
                 
-                await new Promise((resolve) => {
+                await new Promise((resolve, reject) => {
                     const listener = (tabId, changeInfo, tab) => {
-                        if (changeInfo.status === 'complete' && tab.url.includes('/document/d/')) {
+                        if (changeInfo.status === 'complete' && tab.url && tab.url.includes('/document/d/')) {
                             chrome.tabs.onUpdated.removeListener(listener);
                             // Add delay to let the editor fully load
                             setTimeout(async () => {
-                                await focusTabAndEditor(tabId);
-                                await sendUniversalShortcut(tabId, "v", false, false);
-                                resolve();
+                                try {
+                                    await focusTabAndEditor(tabId);
+                                    await clickDocsMenuShortcut(tabId, "Ctrl+V");
+                                    resolve();
+                                } catch (error) {
+                                    reject(error);
+                                }
                             }, 480); // 2 second delay
                         }
                     };

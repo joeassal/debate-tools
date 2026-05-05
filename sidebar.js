@@ -133,8 +133,8 @@
           window.open("https://debatetimer.net/", "Debate Timer", "width=400,height=600");
         }
         else if (actionName === "OpenCaseList") {
-          const parts=localStorage.getItem("userName").trim().split(" ")
-          const caseListUrl = `https://opencaselist.com/${localStorage.getItem("userFormat") + "25"}/${localStorage.getItem("userSchool")}/${parts[0].slice(0, 2)+parts[parts.length - 1].slice(0, 2)}/add`;
+          const parts=DebateTools.getSetting("userName").trim().split(" ")
+          const caseListUrl = `https://opencaselist.com/${DebateTools.getSetting("userFormat") + "25"}/${DebateTools.getSetting("userSchool")}/${parts[0].slice(0, 2)+parts[parts.length - 1].slice(0, 2)}/add`;
           await chrome.runtime.sendMessage({ action: "openCleanCaseList", url: caseListUrl });
           
         }
@@ -175,17 +175,17 @@
       <div class="sidebar-control-grid">
         <div class="sidebar-button-grid">
 
-        <button class="side-btn" data-action="Paste">Paste (${localStorage.getItem("Paste")})</button>
-        <button class="side-btn" data-action="Condense">Condense (${localStorage.getItem("Condense")})</button>
-        <button class="side-btn" data-action="Pocket">Pocket (${localStorage.getItem("Pocket")})</button>
-        <button class="side-btn" data-action="Hat">Hat (${localStorage.getItem("Hat")})</button>
-        <button class="side-btn" data-action="Block">Block (${localStorage.getItem("Block")})</button>
-        <button class="side-btn" data-action="Tag">Tag (${localStorage.getItem("Tag")})</button>
-        <button class="side-btn" data-action="Cite">Cite (${localStorage.getItem("Cite")})</button>
-        <button class="side-btn" data-action="Underline">Underline (${localStorage.getItem("Underline")})</button>
-        <button class="side-btn" data-action="Emphasis">Emphasis (${localStorage.getItem("Emphasis")})</button>
-        <button class="side-btn" data-action="Highlight">Highlight (${localStorage.getItem("Highlight")})</button>
-        <button class="side-btn" data-action="Clear">Clear (${localStorage.getItem("Clear")})</button>
+        <button class="side-btn" data-action="Paste">Paste (${DebateTools.getSetting("Paste")})</button>
+        <button class="side-btn" data-action="Condense">Condense (${DebateTools.getSetting("Condense")})</button>
+        <button class="side-btn" data-action="Pocket">Pocket (${DebateTools.getSetting("Pocket")})</button>
+        <button class="side-btn" data-action="Hat">Hat (${DebateTools.getSetting("Hat")})</button>
+        <button class="side-btn" data-action="Block">Block (${DebateTools.getSetting("Block")})</button>
+        <button class="side-btn" data-action="Tag">Tag (${DebateTools.getSetting("Tag")})</button>
+        <button class="side-btn" data-action="Cite">Cite (${DebateTools.getSetting("Cite")})</button>
+        <button class="side-btn" data-action="Underline">Underline (${DebateTools.getSetting("Underline")})</button>
+        <button class="side-btn" data-action="Emphasis">Emphasis (${DebateTools.getSetting("Emphasis")})</button>
+        <button class="side-btn" data-action="Highlight">Highlight (${DebateTools.getSetting("Highlight")})</button>
+        <button class="side-btn" data-action="Clear">Clear (${DebateTools.getSetting("Clear")})</button>
         <button class="side-btn" data-action="Shrink">⛶ Shrink</button>
         <button class="side-btn" data-action="StandardizeHighlights">🖍 Standardize Highlights</button>
         <label class="select-row highlight-select-row" data-action="Highlight">
@@ -207,6 +207,7 @@
         <button class="side-btn" data-action="Readmode">🕮 Read Mode</button>
         <button id="flow-btn" class="side-btn" data-action="Flow">✎ Flow</button>
         <button class="side-btn" data-action="Timer">⏲ Timer</button>
+        <button class="side-btn" data-action="Email">✉ Email</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" data-action="NewSpeechDoc">Create Speech Doc</button>
         <button class="side-btn" data-action="SendSpeechDoc">Send to Speech Doc</button>
@@ -237,13 +238,26 @@
             <label class="settings-row">Highlight<select name="Highlight"><option value="Not Selected">Not Selected</option></select></label>
             <label class="settings-row">Clear<select name="Clear"><option value="Not Selected">Not Selected</option></select></label>
         </details>
+        <details class="settings-detail" id="formatStyles"><summary><span>Styles</span> <button id="settings-setstyle">Set Styles</button></summary>
+            <label class="settings-row">Font<select id="font" name="formatFont">
+            <option value="Calibri">Calibri</option>
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            </select></label>
+            <label class="settings-row">Card/Normal Text<input name="ntextSize"></label>
+            <label class="settings-row">Pocket/Heading 1<input name="h1Size"></label>
+            <label class="settings-row">Hat/Heading 2<input name="h2Size"></label>
+            <label class="settings-row">Block/Heading 3<input name="h3Size"></label>
+            <label class="settings-row">Tag/Heading 4<input name="h4Size"></label>
+        </details>
         <details class="settings-detail" id="Features"><summary><span>Features</span></summary>
             <label class="settings-row">Cut Text in Read Mode?<input type="checkbox" name="cutTextReadMode"></label>
             <label class="settings-row">Use pilcrows on Condense?<input type="checkbox" name="usePilcrows"></label>
             <label class="settings-row">New window when making speech doc?<input type="checkbox" name="speechDocNewWindow"></label>
             <label class="settings-row">Show Virtual Tub?<input type="checkbox" name="showFolderTree"></label>
-            <label class="settings-row">School Name on Wiki<input name="userSchool"></label>
+            <label class="settings-row">Convert to normal text when clearing formatting?<input type="checkbox" name="normalTextOnClear"></label>
         </details>
+        
         <details class="settings-detail" id="Caselist"><summary><span>Caselist Info</span></summary>
             <label class="settings-row">Format<select id="userFormat">
             <option value="hspolicy">HS Policy</option>
@@ -389,7 +403,7 @@
           cursor: pointer;
           font-weight: bold;
         }
-        #settings-default {
+        #settings-default, #settings-setstyle {
           border: 1px solid #dadce0;
           background: #f8fafc;
           cursor: pointer;
@@ -418,8 +432,7 @@
 
     // Settings logic
     function changeSetting(key, value) {
-      DebateTools.settings[key] = value
-      localStorage.setItem(key, value);
+      DebateTools.changeSetting(key, value);
       if (key === "showFolderTree") updateFolderTreeVisibility(value);
     }
     
@@ -434,17 +447,20 @@
         setKeybind(DebateTools.bindableActions[i], "F"+(i+2))
       }
     })
+    document.getElementById("settings-setstyle").addEventListener("click", async ()=> await DebateTools.formatHeaderStyles())
 
-    document.getElementById("highlight-color-select").value = DebateTools.settings.highlightColor;
+    document.getElementById("highlight-color-select").value = DebateTools.getSetting("highlightColor");
     document.getElementById("highlight-color-select").addEventListener("change", (e) => changeSetting("highlightColor", e.target.value));
-    document.getElementById("userFormat").value = DebateTools.settings.userFormat;
+    document.getElementById("userFormat").value = DebateTools.getSetting("userFormat");
     document.getElementById("userFormat").addEventListener("change", (e) => changeSetting("userFormat", e.target.value));
+    document.getElementById("font").value = DebateTools.getSetting("formatFont");
+    document.getElementById("font").addEventListener("change", (e) => changeSetting("formatFont", e.target.value));
     sidebar.querySelectorAll('INPUT').forEach((input) => {
       if(input.type=="checkbox") {
-        input.checked = DebateTools.settings[input.name]
+        input.checked = DebateTools.getSetting(input.name)
         input.addEventListener("change", (e) => changeSetting(input.name, e.target.checked))
       } else {
-        input.value = DebateTools.settings[input.name]
+        input.value = DebateTools.getSetting(input.name)
         input.addEventListener("change", (e) => changeSetting(input.name, e.target.value))
       }
     })
@@ -467,7 +483,7 @@
         option.innerHTML="F"+i
         tsKey.appendChild(option)
       }
-      tsKey.value = localStorage.getItem(tsKey.name)
+      tsKey.value = DebateTools.getSetting(tsKey.name)
 
       tsKey.addEventListener('change', (e) => setKeybind(tsKey.name, e.target.value))      
     })
@@ -477,14 +493,16 @@
         if (DebateTools.keybinds[key] === newKey) {
           DebateTools.keybinds[key] = "Not Selected";
           syncSelect(key, "Not Selected");
-          localStorage.setItem(key, "Not Selected");
+          syncActionButton(key, "Not Selected");
+          DebateTools.changeSetting(key, "Not Selected");
         }
       }
       // 2. Set new value
       DebateTools.keybinds[action] = newKey;
-      localStorage.setItem(action, newKey);
+      DebateTools.changeSetting(action, newKey);
       // 3. Sync UI
       syncSelect(action, newKey);
+      syncActionButton(action, newKey);
     }
     function syncSelect(action, value) {
       const select = keybindsFormat.querySelector(
@@ -492,15 +510,19 @@
       );
       if (select) select.value = value;
     }
+    function syncActionButton(action, value) {
+      const button = sidebar.querySelector(`.side-btn[data-action="${action}"]`);
+      if (button) button.textContent = `${action} (${value})`;
+    }
     // end keybind logic
 
 
 
     //attaching folder tree
-    if (DebateTools.settings.showFolderTree) {
+    if (DebateTools.getSetting("showFolderTree")) {
       DebateTools.attachFolderTree();
     }
-    updateFolderTreeVisibility(DebateTools.settings.showFolderTree);
+    updateFolderTreeVisibility(DebateTools.getSetting("showFolderTree"));
 
     //reize handle logic
     const resizeHandle = document.createElement("div");

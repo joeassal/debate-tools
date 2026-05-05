@@ -1,17 +1,65 @@
 (function (global) {
   const DebateTools = global.DebateTools || {};
+  const settingsStorageKey = "debateSettings";
+  const defaultSettings = {
+    highlightColor: "yellow",
+    cutTextReadMode: true,
+    usePilcrows: true,
+    speechDocNewWindow: true,
+    showFolderTree: true,
+    normalTextOnClear: false,
+    userName: "",
+    userSchool: "",
+    userFormat: "hspolicy",
+    Paste: "F2",
+    Condense: "F3",
+    Pocket: "F4",
+    Hat: "F5",
+    Block: "F6",
+    Tag: "F7",
+    Cite: "F8",
+    Underline: "F9",
+    Emphasis: "F10",
+    Highlight: "F11",
+    Clear: "F12",
+    formatFont: "Calibri",
+    ntextSize: "11",
+    h1Size: "26",
+    h2Size: "22",
+    h3Size: "16",
+    h4Size: "13",
+  }
 
-  DebateTools.settings = {
-    highlightColor: localStorage.getItem("highlightColor") || "yellow",
-    cutTextReadMode: localStorage.getItem("cutTextReadMode") !== "false",
-    usePilcrows: localStorage.getItem("usePilcrows") !== "false",
-    speechDocNewWindow: localStorage.getItem("speechDocNewWindow") !== "false",
-    showFolderTree: localStorage.getItem("showFolderTree") !== "false",
-
-    userName: localStorage.getItem("userName") || "",
-    userSchool: localStorage.getItem("userSchool") || "",
-    userFormat: localStorage.getItem("userFormat") || "hspolicy",
+  DebateTools.loadSettings = function loadSettings() {
+    try {
+      return {
+        ...defaultSettings,
+        ...JSON.parse(localStorage.getItem(settingsStorageKey) || "{}"),
+      };
+    } catch (error) {
+      console.warn("Could not load debate settings", error);
+      return { ...defaultSettings };
+    }
   };
+
+  DebateTools.saveSettings = function saveSettings() {
+    localStorage.setItem(settingsStorageKey, JSON.stringify(DebateTools.settings));
+  };
+
+  DebateTools.getSetting = function getSetting(setting) {
+    return DebateTools.settings[setting];
+  };
+
+  DebateTools.changeSetting = function changeSetting(setting, newValue) {
+    DebateTools.settings[setting] = newValue;
+    if (DebateTools.keybinds && DebateTools.bindableActions && DebateTools.bindableActions.includes(setting)) {
+      DebateTools.keybinds[setting] = newValue;
+    }
+    DebateTools.saveSettings();
+    return newValue;
+  };
+
+  DebateTools.settings = DebateTools.loadSettings();
   highlightLookup = {
     yellow: "docs-material-colorpalette-cell-103",
     lime: "docs-material-colorpalette-cell-104",
@@ -20,12 +68,12 @@
     red: "docs-material-colorpalette-cell-101",
   }
   DebateTools.actions = {
-    Paste: async () => await DebateTools.sendShortcut("v", true),
+    Paste: async () => await DebateTools.clickDocsMenuShortcut("Ctrl+Shift+V"),
     Condense: async () => await DebateTools.condense(),
-    Pocket: async () => await DebateTools.sendShortcut("1", false, true),
-    Hat: async () => await DebateTools.sendShortcut("2", false, true),
-    Block: async () => await DebateTools.sendShortcut("3", false, true),
-    Tag: async () => await DebateTools.sendShortcut("4", false, true),
+    Pocket: async () => await DebateTools.clickHeader("Ctrl+Alt+1"),
+    Hat: async () => await DebateTools.clickHeader("Ctrl+Alt+2"),
+    Block: async () => await DebateTools.clickHeader("Ctrl+Alt+3"),
+    Tag: async () => await DebateTools.clickHeader("Ctrl+Alt+4"),
     Cite: async () => {
       DebateTools.clickDocButton("clearFormattingButton");
       DebateTools.clickDocButton("fontSizeIncrement");
@@ -36,11 +84,11 @@
     Highlight: async () => {
       DebateTools.clickDocButton("bgColorButton");
       DebateTools.clickDocButton("bgColorButton");
-      DebateTools.clickDocButton(highlightLookup[DebateTools.settings.highlightColor]);
+      DebateTools.clickDocButton(highlightLookup[DebateTools.getSetting("highlightColor")]);
     },
     Clear: async () => {
       DebateTools.clickDocButton("clearFormattingButton");
-      await DebateTools.sendShortcut("0", false, true);
+      if(DebateTools.getSetting("normalTextOnClear")) DebateTools.clickHeader("Ctrl+Alt+0")
     },
     Emphasis: () => {DebateTools.clickDocButton("underlineButton");DebateTools.clickDocButton("boldButton")},
     Readmode: async () => await DebateTools.readMode(),
@@ -49,8 +97,9 @@
     Exportdocx: () => DebateTools.ExportDocX(),
     Exportpdf: () => DebateTools.ExportPDF(),
     SendSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "sendSpeechDoc" }, (response) => {if(response && !response.success) { alert(response.message); }}),
-    NewSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "newSpeechDoc", newWindow: DebateTools.settings.speechDocNewWindow }, (response) => {if(response && !response.success) { alert(response.message); }}),
+    NewSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "newSpeechDoc", newWindow: DebateTools.getSetting("speechDocNewWindow") }, (response) => {if(response && !response.success) { alert(response.message); }}),
     Shrink: async () => await DebateTools.shrink(),
+    Email: async () => await DebateTools.clickDocsMenuShortcut("Email this file a"),
     Wikify: async () => await DebateTools.wikify(),
     StandardizeHighlights: async () => await DebateTools.standardizeHighlights(),
   };
@@ -61,26 +110,17 @@
   };
   DebateTools.bindableActions = ["Paste", "Condense", "Pocket", "Hat", "Block", "Tag", "Cite", "Underline", "Emphasis", "Highlight", "Clear"];
   DebateTools.bindableActions.forEach(action => {
-    DebateTools.keybinds[action] =
-      localStorage.getItem(action) || "Not Selected";
+    DebateTools.keybinds[action] = DebateTools.getSetting(action) || "Not Selected";
   });
   //set keybinds
 
 
   DebateTools.defaultKeybinds = function defaultKeybinds() {
     for(let i=0;i<11;i++){
-      localStorage.setItem(DebateTools.bindableActions[i], "F"+(i+2))
+      const action = DebateTools.bindableActions[i];
+      DebateTools.keybinds[action] = "F"+(i+2);
+      DebateTools.changeSetting(action, "F"+(i+2));
     }
-  }
-
-  // If user is new, do these actions
-  if(localStorage.getItem("hasLoadedBefore") === null) {
-    DebateTools.defaultKeybinds()
-    localStorage.setItem("cutTextReadMode", "true");
-    localStorage.setItem("usePilcrows", "true");
-    localStorage.setItem("speechDocNewWindow", "true");
-    localStorage.setItem("showFolderTree", "true");
-    localStorage.setItem("hasLoadedBefore", "true");
   }
 
 
@@ -127,8 +167,20 @@
   };
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action !== "focusDocsEditor") return;
-    sendResponse({ focused: DebateTools.focusDocsEditor() });
+    if (message.action === "focusDocsEditor") {
+      sendResponse({ focused: DebateTools.focusDocsEditor() });
+      return;
+    }
+
+    if (message.action === "clickDocsMenuShortcut") {
+      (async () => {
+        const clicked = await DebateTools.clickDocsMenuShortcut(message.shortcutLabel);
+        sendResponse({ success: clicked });
+      })().catch((error) => {
+        sendResponse({ success: false, error: error.message });
+      });
+      return true;
+    }
   });
 
   const initObserver = new MutationObserver(() => {

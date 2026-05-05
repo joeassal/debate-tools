@@ -57,6 +57,44 @@
 
     const root = host.querySelector("#tree");
     const folderStorageKey = "debateTools.folderTree";
+    const cardStorageKey = "debateTools.folderCards";
+
+    function getCards() {
+        return JSON.parse(localStorage.getItem(cardStorageKey) || "{}");
+    }
+
+    function saveCards(cards) {
+        localStorage.setItem(cardStorageKey, JSON.stringify(cards));
+    }
+
+    function createBlockId() {
+        if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+        return "block-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+    }
+
+    function saveCard(blockData) {
+        const blockId = createBlockId();
+        const cards = getCards();
+        cards[blockId] = blockData;
+        saveCards(cards);
+        return blockId;
+    }
+
+    function getCard(blockId) {
+        return getCards()[blockId] || "";
+    }
+
+    function deleteCard(blockId) {
+        const cards = getCards();
+        delete cards[blockId];
+        saveCards(cards);
+    }
+
+    function deleteCardsInFolder(folder) {
+        folder.querySelectorAll('[data-type="file"]').forEach((file) => {
+            deleteCard(file.dataset.blockId);
+        });
+    }
 
     function getFolderTree() {
         return [...root.children]
@@ -70,7 +108,10 @@
     }
 
     function exportFolderTree() {
-        const json = JSON.stringify(getFolderTree(), null, 2);
+        const json = JSON.stringify({
+            tree: getFolderTree(),
+            cards: getCards()
+        }, null, 2);
         const blob = new Blob([json], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
@@ -84,7 +125,8 @@
     }
 
     function importFolderTree(treeJson) {
-        const tree = typeof treeJson === "string" ? JSON.parse(treeJson) : treeJson;
+        const tub = typeof treeJson === "string" ? JSON.parse(treeJson) : treeJson;
+        const tree = tub.tree;
 
         if (!Array.isArray(tree)) {
             throw new Error("Imported folder tree must be an array.");
@@ -92,6 +134,7 @@
 
         root.replaceChildren();
         tree.forEach((node) => root.appendChild(createTreeNode(node)));
+        saveCards(tub.cards || {});
         saveFolderTree();
     }
 
@@ -124,7 +167,7 @@
                 return {
                     type: "file",
                     name: child.dataset.name || child.textContent,
-                    block: child.dataset.block
+                    blockId: child.dataset.blockId
                 };
             });
 
@@ -161,7 +204,7 @@
             return folder;
         }
 
-        return createFile(node.name, node.block);
+        return createFile(node.name, node.blockId);
     }
 
     function createFolder(name) {
@@ -218,6 +261,7 @@
                 if(confirm("Are you sure you want to delete this folder and all its contents?")) {
                   e.preventDefault();
                   e.stopPropagation();
+                  deleteCardsInFolder(folder);
                   folder.remove();
                   saveFolderTree();
                 }
@@ -233,11 +277,11 @@
         return folder;
     }
 
-    function createFile(name, blockData) {
+    function createFile(name, blockId) {
         const file = document.createElement("div");
         file.dataset.type = "file";
         file.dataset.name = name;
-        file.dataset.block = blockData;
+        file.dataset.blockId = blockId;
         file.style.marginLeft = "20px";
 
         const fileLabel = document.createElement("button");
@@ -252,7 +296,7 @@
           e.stopPropagation();
           DebateTools.focusDocsEditor();
           await new Promise((resolve) => setTimeout(resolve, 100));
-          await DebateTools.pasteHTML(file.dataset.block);
+          await DebateTools.pasteHTML(getCard(file.dataset.blockId));
         });
 
         const deleteBtn = document.createElement("button");
@@ -265,6 +309,7 @@
             if(confirm("Are you sure you want to delete this folder and all its contents?")) {
                 e.preventDefault();
                 e.stopPropagation();
+                deleteCard(file.dataset.blockId);
                 file.remove();
                 saveFolderTree();
             }
@@ -313,10 +358,11 @@
     function addFile(path, blockData) {
       const parts = path.split("/").filter(Boolean);
       const fileName = parts.pop();
+      const blockId = saveCard(blockData);
 
       const folder = getOrCreateFolder(parts);
 
-      folder.appendChild(createFile(fileName, blockData));
+      folder.appendChild(createFile(fileName, blockId));
       saveFolderTree();
     }
 
