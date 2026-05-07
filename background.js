@@ -170,7 +170,6 @@ async function openCleanCaseListWindow(url) {
 
     const tabId = caseListWindow.tabs && caseListWindow.tabs[0] && caseListWindow.tabs[0].id;
     if (!tabId) return;
-
     const cleanup = async () => {
         await chrome.scripting.executeScript({
             target: { tabId },

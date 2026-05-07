@@ -132,12 +132,6 @@
         else if (actionName === "Timer") {
           window.open("https://debatetimer.net/", "Debate Timer", "width=400,height=600");
         }
-        else if (actionName === "OpenCaseList") {
-          const parts=DebateTools.getSetting("userName").trim().split(" ")
-          const caseListUrl = `https://opencaselist.com/${DebateTools.getSetting("userFormat") + "25"}/${DebateTools.getSetting("userSchool")}/${parts[0].slice(0, 2)+parts[parts.length - 1].slice(0, 2)}/add`;
-          await chrome.runtime.sendMessage({ action: "openCleanCaseList", url: caseListUrl });
-          
-        }
         else {
           await DebateTools.runAction(actionName);
         }
@@ -254,10 +248,12 @@
             <label class="settings-row">Cut Text in Read Mode?<input type="checkbox" name="cutTextReadMode"></label>
             <label class="settings-row">Use pilcrows on Condense?<input type="checkbox" name="usePilcrows"></label>
             <label class="settings-row">New window when making speech doc?<input type="checkbox" name="speechDocNewWindow"></label>
-            <label class="settings-row">Show Virtual Tub?<input type="checkbox" name="showFolderTree"></label>
             <label class="settings-row">Convert to normal text when clearing formatting?<input type="checkbox" name="normalTextOnClear"></label>
         </details>
-        
+        <details class="settings-detail"><summary><span>Virtual Tub</span></summary>
+            <label class="settings-row">Show Virtual Tub?<input type="checkbox" name="showFolderTree"></label>
+            <label class="settings-row">Ask to confirm when rewriting?<input type="checkbox" name="confirmOnRewrite"></label>
+        </details>
         <details class="settings-detail" id="Caselist"><summary><span>Caselist Info</span></summary>
             <label class="settings-row">Format<select id="userFormat">
             <option value="hspolicy">HS Policy</option>

@@ -7,6 +7,7 @@
     usePilcrows: true,
     speechDocNewWindow: true,
     showFolderTree: true,
+    confirmOnRewrite: true,
     normalTextOnClear: false,
     userName: "",
     userSchool: "",
@@ -102,6 +103,7 @@
     Email: async () => await DebateTools.clickDocsMenuShortcut("Email this file a"),
     Wikify: async () => await DebateTools.wikify(),
     StandardizeHighlights: async () => await DebateTools.standardizeHighlights(),
+    OpenCaseList: async () => await DebateTools.openCaselist()
   };
 
   //init keybinds

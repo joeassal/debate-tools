@@ -118,24 +118,59 @@
   };
   DebateTools.formatHeaderStyles = async () => {
     const startCB2 = await navigator.clipboard.read();
+    const h1 = `<span id=""><h1 dir="ltr" style="text-align: center;border-left:solid #000000 3pt;border-right:solid #000000 3pt;border-top:solid #000000 3pt;border-bottom:solid #000000 3pt;margin-top:20pt;margin-bottom:6pt;padding:2pt 2pt 2pt 2pt;"><span style="font-size: ${DebateTools.getSetting("h1Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Done! you can close this tab now</span></h1><div><span style="font-size: 11pt; font-family: Calibri, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"><br></span></div></span>`
+    const h2 = `<span id=""><span style="text-align: center; font-size: ${DebateTools.getSetting("h2Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 2 (hat)</span></span><br>`
+    const h3 = `<span id=""><span style="text-align: center; font-size: ${DebateTools.getSetting("h3Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 3 (block)</span></span><br>`
+    const h4 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h4Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Heading 4 (tag)</span></span><br>`
+    const nt = `<span id=""><span style="font-size: ${DebateTools.getSetting("ntextSize")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"></span></span><br>`
+    const styles=[h1,h2,h3,h4,nt]
+    await DebateTools.clickDocsMenuShortcut("Shift+F11")
+
+    for (let i=styles.length-1;i>=0;i--) {
+      let style=styles[i];
+      if(i==4) {
+        await DebateTools.pasteHTML(style)
+        await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+        await DebateTools.clickHeader("Update 'Normal text' to match u")
+        await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+        continue;
+      }
+      await DebateTools.pasteHTML(style)
+      await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+      await DebateTools.clickHeader(`Update 'Heading ${i+1}' to match u`)
+      await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+    }
+    await DebateTools.clickHeader(`Save as my default styles s`)
+    await navigator.clipboard.write(startCB2);
+  }
+/*  DebateTools.formatHeaderStyles = async () => {
+    const startCB2 = await navigator.clipboard.read();
+    const nt = `<span id=""><span style="font-size: ${DebateTools.getSetting("ntextSize")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Highlight each heading and on the tool bar click "Heading X" -> "Update 'Heading X' to match" for each heading. Then do Options -> Save as my default styles (Normal Text) Then do Options -> Use Default to change formatting</span></span><br>`
     const h1 = `<span id=""><h1 dir="ltr" style="text-align: center;border-left:solid #000000 3pt;border-right:solid #000000 3pt;border-top:solid #000000 3pt;border-bottom:solid #000000 3pt;margin-top:20pt;margin-bottom:6pt;padding:2pt 2pt 2pt 2pt;"><span style="font-size: ${DebateTools.getSetting("h1Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Heading 1 (pocket)</span></h1><div><span style="font-size: 11pt; font-family: Calibri, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"><br></span></div></span>`
     const h2 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h2Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 2 (hat)</span></span><br>`
     const h3 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h3Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 3 (block)</span></span><br>`
     const h4 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h4Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Heading 4 (tag)</span></span><br>`
-    const nt = `<span id=""><span style="font-size: ${DebateTools.getSetting("ntextSize")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Highlight each heading and on the tool bar click "Heading X" -> "Update 'Heading X' to match" for each heading. Then do Options -> Save as my default styles (Normal Text) Then do Options -> Use Default to change formatting</span></span><br>`
     const styles=[h1,h2,h3,h4,nt]
     await DebateTools.clickDocsMenuShortcut("Shift+F11")
 
-    for (const style of styles) {
-      const blob = new Blob([style], { type: "text/html" });
-      await navigator.clipboard.write([new ClipboardItem({ "text/html": blob })]);
-      await new Promise((resolve) => setTimeout(resolve, 30));
-      await DebateTools.clickDocsMenuShortcut("Ctrl+V")
+    for (let i=styles.length-1;i>=0;i++) {
+      let style=styles[i];
+      if(i==0) {
+        await DebateTools.pasteHTML(style)
+        await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+        await DebateTools.clickHeader("Update 'Normal text' to match u")
+        await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+        continue;
+      }
+      await DebateTools.pasteHTML(style)
+      await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+      await DebateTools.clickHeader(`Update 'Heading ${i+1}' to match u`)
+      await DebateTools.clickDocsMenuShortcut("Ctrl+A")
     }
-
+    await DebateTools.clickHeader(`Save as my default styles s`)
     await navigator.clipboard.write(startCB2);
   }
-
+    */
   DebateTools.checkClipboard = async function checkClipboard() {
     try {
       const items = await navigator.clipboard.read();
@@ -234,7 +269,7 @@
           el.remove();
         }
       });
-
+      
       const allElements = container.querySelectorAll("*");
       allElements.forEach((el) => {
         el.style.display = "inline";
@@ -444,6 +479,12 @@
       });
       return container.innerHTML.innerHTML;
     });
+  }
+
+  DebateTools.openCaselist = async () => {
+    const parts=DebateTools.getSetting("userName").trim().split(" ")
+    const caseListUrl = `https://opencaselist.com/${DebateTools.getSetting("userFormat") + "25"}/${DebateTools.getSetting("userSchool")}/${parts[0].slice(0, 2)+parts[parts.length - 1].slice(0, 2)}/add`;
+    await chrome.runtime.sendMessage({ action: "openCleanCaseList", url: caseListUrl });
   }
 
   global.DebateTools = DebateTools;
