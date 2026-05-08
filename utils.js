@@ -103,7 +103,7 @@
     const menuItems = document.querySelectorAll(headingMenuItemSelector);
 
     for (const item of menuItems) {
-      if(item.innerText.includes("Heading") || item.innerText.includes("Normal")) {
+      if(item.innerHTML.includes("Heading") || item.innerText.includes("Normal") && item.style.whiteSpace==="pre") {
         DebateTools.hoverElement(item);
         await DebateTools.sleep(10);
       }
@@ -118,59 +118,35 @@
   };
   DebateTools.formatHeaderStyles = async () => {
     const startCB2 = await navigator.clipboard.read();
-    const h1 = `<span id=""><h1 dir="ltr" style="text-align: center;border-left:solid #000000 3pt;border-right:solid #000000 3pt;border-top:solid #000000 3pt;border-bottom:solid #000000 3pt;margin-top:20pt;margin-bottom:6pt;padding:2pt 2pt 2pt 2pt;"><span style="font-size: ${DebateTools.getSetting("h1Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Done! you can close this tab now</span></h1><div><span style="font-size: 11pt; font-family: Calibri, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"><br></span></div></span>`
+    const h1 = `<span id=""><h1 style="text-align: center;border-left:solid #000000 3pt;border-right:solid #000000 3pt;border-top:solid #000000 3pt;border-bottom:solid #000000 3pt;margin-top:20pt;margin-bottom:6pt;padding:2pt 2pt 2pt 2pt;"><span style="font-size: ${DebateTools.getSetting("h1Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Done, you can delete this doc tab now</span></h1><div><span style="font-size: 11pt; font-family: Calibri, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"><br></span></div></span>`
     const h2 = `<span id=""><span style="text-align: center; font-size: ${DebateTools.getSetting("h2Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 2 (hat)</span></span><br>`
     const h3 = `<span id=""><span style="text-align: center; font-size: ${DebateTools.getSetting("h3Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 3 (block)</span></span><br>`
     const h4 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h4Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Heading 4 (tag)</span></span><br>`
-    const nt = `<span id=""><span style="font-size: ${DebateTools.getSetting("ntextSize")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"></span></span><br>`
-    const styles=[h1,h2,h3,h4,nt]
+    //const nt = `<span id=""><span style="font-size: ${DebateTools.getSetting("ntextSize")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"></span></span><br>`
+    const styles=[h1,h2,h3,h4/*,nt*/]
     await DebateTools.clickDocsMenuShortcut("Shift+F11")
 
     for (let i=styles.length-1;i>=0;i--) {
       let style=styles[i];
-      if(i==4) {
-        await DebateTools.pasteHTML(style)
-        await DebateTools.clickDocsMenuShortcut("Ctrl+A")
-        await DebateTools.clickHeader("Update 'Normal text' to match u")
-        await DebateTools.clickDocsMenuShortcut("Ctrl+A")
-        continue;
-      }
+      // if(i==4) {
+      //   await DebateTools.pasteHTML(style)
+      //   await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+      //   await DebateTools.clickHeader("Update 'Normal text' to match u")
+      //   await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+      //   continue;
+      // }
+      if(i<3) await DebateTools.clickDocButton('alignCenterButton')
       await DebateTools.pasteHTML(style)
       await DebateTools.clickDocsMenuShortcut("Ctrl+A")
       await DebateTools.clickHeader(`Update 'Heading ${i+1}' to match u`)
       await DebateTools.clickDocsMenuShortcut("Ctrl+A")
     }
     await DebateTools.clickHeader(`Save as my default styles s`)
+    await DebateTools.clickDocButton("headingStyleSelect")
+    await DebateTools.clickDocButton("headingStyleSelect")
     await navigator.clipboard.write(startCB2);
   }
-/*  DebateTools.formatHeaderStyles = async () => {
-    const startCB2 = await navigator.clipboard.read();
-    const nt = `<span id=""><span style="font-size: ${DebateTools.getSetting("ntextSize")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Highlight each heading and on the tool bar click "Heading X" -> "Update 'Heading X' to match" for each heading. Then do Options -> Save as my default styles (Normal Text) Then do Options -> Use Default to change formatting</span></span><br>`
-    const h1 = `<span id=""><h1 dir="ltr" style="text-align: center;border-left:solid #000000 3pt;border-right:solid #000000 3pt;border-top:solid #000000 3pt;border-bottom:solid #000000 3pt;margin-top:20pt;margin-bottom:6pt;padding:2pt 2pt 2pt 2pt;"><span style="font-size: ${DebateTools.getSetting("h1Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Heading 1 (pocket)</span></h1><div><span style="font-size: 11pt; font-family: Calibri, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"><br></span></div></span>`
-    const h2 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h2Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 2 (hat)</span></span><br>`
-    const h3 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h3Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 3 (block)</span></span><br>`
-    const h4 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h4Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Heading 4 (tag)</span></span><br>`
-    const styles=[h1,h2,h3,h4,nt]
-    await DebateTools.clickDocsMenuShortcut("Shift+F11")
 
-    for (let i=styles.length-1;i>=0;i++) {
-      let style=styles[i];
-      if(i==0) {
-        await DebateTools.pasteHTML(style)
-        await DebateTools.clickDocsMenuShortcut("Ctrl+A")
-        await DebateTools.clickHeader("Update 'Normal text' to match u")
-        await DebateTools.clickDocsMenuShortcut("Ctrl+A")
-        continue;
-      }
-      await DebateTools.pasteHTML(style)
-      await DebateTools.clickDocsMenuShortcut("Ctrl+A")
-      await DebateTools.clickHeader(`Update 'Heading ${i+1}' to match u`)
-      await DebateTools.clickDocsMenuShortcut("Ctrl+A")
-    }
-    await DebateTools.clickHeader(`Save as my default styles s`)
-    await navigator.clipboard.write(startCB2);
-  }
-    */
   DebateTools.checkClipboard = async function checkClipboard() {
     try {
       const items = await navigator.clipboard.read();
@@ -224,7 +200,7 @@
 
     newCB = newCB.replace(/\bid=(["']).*?\1/g, 'id=""');
 
-    const container = document.createElement("div");
+    const container = document.createElement("span");
     container.innerHTML = newCB;
 
     const modifiedHtml = await callback(container);
@@ -239,15 +215,16 @@
   };
   DebateTools.shrink = function shrink() {
     return DebateTools.modifySelection(async (container) => {
-      const spans = container.querySelectorAll("span");
+      const spans = container.querySelectorAll("*");
       spans.forEach((span) => {
         const size = span.style.fontSize;
         const underline = span.style.textDecoration;
         const bg = span.style.backgroundColor;
-        
+        span.style.lineHeight=1.1;
         if (!(underline && underline.includes("underline") || bg && bg!=="transparent")) {
-          const newSize = parseFloat(size) - 1;
-          span.style.fontSize = newSize + "px";
+          let newSize = parseFloat(size) - 1;
+          if(newSize<=5) newSize=11
+          span.style.fontSize = newSize + "pt";
         }
       });
       return container.innerHTML;
@@ -291,7 +268,33 @@
       return container.innerHTML;
     });
   };
+  DebateTools.emphasis = async () => {
+    const ubtn=document.getElementById("underlineButton")
+    const bbtn=document.getElementById("boldButton")
+    if(ubtn.ariaPressed == "true" && bbtn.ariaPressed == "true") {
+      DebateTools.clickElement(ubtn);
+      DebateTools.clickElement(bbtn);
+      return;
+    }
+    if(ubtn.ariaPressed != "true") {
+      DebateTools.clickElement(ubtn);
+    }
+    if(bbtn.ariaPressed != "true") {
+      DebateTools.clickElement(bbtn);
+    }
+  }
 
+ 
+  DebateTools.highlight = async () => {
+    const bgBtn = document.getElementById("bgColorButton")
+    DebateTools.clickElement(bgBtn)
+    DebateTools.clickElement(bgBtn)
+    if(bgBtn.querySelector(".goog-color-menu-button-indicator").outerHTML.includes("border-bottom-color")) {
+      DebateTools.clickElement(document.querySelector(".colormenuitems-no-color"));
+    } else {
+      await DebateTools.clickDocButton(highlightLookup[DebateTools.getSetting("highlightColor")]);
+    }
+  }
   function getTrimmedReadModeParagraph(pg) {
     const innerText = pg.innerText;
     const isCite = innerText.includes("http") || innerText.includes("www");
@@ -485,6 +488,47 @@
     const parts=DebateTools.getSetting("userName").trim().split(" ")
     const caseListUrl = `https://opencaselist.com/${DebateTools.getSetting("userFormat") + "25"}/${DebateTools.getSetting("userSchool")}/${parts[0].slice(0, 2)+parts[parts.length - 1].slice(0, 2)}/add`;
     await chrome.runtime.sendMessage({ action: "openCleanCaseList", url: caseListUrl });
+  }
+
+  DebateTools.selectSpeechDoc = async () => {
+    const response = await chrome.runtime.sendMessage({ action: "getGoogleDocTabs" });
+    if (!response || !response.success || !response.tabs || response.tabs.length === 0) {
+      alert("No open Google Doc tabs found.");
+      return;
+    }
+
+    const currentUrl = window.location.href;
+    const tabs = response.tabs.filter((tab) => tab.url !== currentUrl);
+    if (tabs.length === 0) {
+      alert("Open another Google Doc tab first, then select it as a speech doc.");
+      return;
+    }
+
+    const promptText = tabs.map((tab, index) => {
+      const activeMarker = tab.id === response.activeSpeechDocID ? " *" : "";
+      return `${index + 1}. ${tab.title}${activeMarker}`;
+    }).join("\n");
+
+    const choice = prompt(`Select a speech doc:\n\n${promptText}`);
+    if (!choice) return;
+
+    const selectedTab = tabs[parseInt(choice, 10) - 1];
+    if (!selectedTab) {
+      alert("That was not a valid speech doc selection.");
+      return;
+    }
+
+    const selectResponse = await chrome.runtime.sendMessage({
+      action: "registerSpeechDoc",
+      tabId: selectedTab.id
+    });
+
+    if (!selectResponse || !selectResponse.success) {
+      alert(selectResponse && selectResponse.message || "Could not select that speech doc.");
+      return;
+    }
+
+    alert(`Selected speech doc: ${selectedTab.title}`);
   }
 
   global.DebateTools = DebateTools;

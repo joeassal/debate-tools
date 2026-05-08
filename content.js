@@ -8,7 +8,7 @@
     speechDocNewWindow: true,
     showFolderTree: true,
     confirmOnRewrite: true,
-    normalTextOnClear: false,
+    normalTextOnClear: true,
     userName: "",
     userSchool: "",
     userFormat: "hspolicy",
@@ -82,16 +82,12 @@
       DebateTools.clickDocButton("boldButton");
     },
     Underline: () => DebateTools.clickDocButton("underlineButton"),
-    Highlight: async () => {
-      DebateTools.clickDocButton("bgColorButton");
-      DebateTools.clickDocButton("bgColorButton");
-      DebateTools.clickDocButton(highlightLookup[DebateTools.getSetting("highlightColor")]);
-    },
+    Highlight: async () => await DebateTools.highlight(),
     Clear: async () => {
       DebateTools.clickDocButton("clearFormattingButton");
       if(DebateTools.getSetting("normalTextOnClear")) DebateTools.clickHeader("Ctrl+Alt+0")
     },
-    Emphasis: () => {DebateTools.clickDocButton("underlineButton");DebateTools.clickDocButton("boldButton")},
+    Emphasis: async () => await DebateTools.emphasis(),
     Readmode: async () => await DebateTools.readMode(),
     Importdocx: async () => await DebateTools.ImportDocX(),
     ImportdocxToClipboard: async () => await DebateTools.ImportDocXtoClipboard(),
@@ -99,6 +95,7 @@
     Exportpdf: () => DebateTools.ExportPDF(),
     SendSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "sendSpeechDoc" }, (response) => {if(response && !response.success) { alert(response.message); }}),
     NewSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "newSpeechDoc", newWindow: DebateTools.getSetting("speechDocNewWindow") }, (response) => {if(response && !response.success) { alert(response.message); }}),
+    SelectSpeechDoc: async () => await DebateTools.selectSpeechDoc(),
     Shrink: async () => await DebateTools.shrink(),
     Email: async () => await DebateTools.clickDocsMenuShortcut("Email this file a"),
     Wikify: async () => await DebateTools.wikify(),

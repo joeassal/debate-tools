@@ -203,14 +203,14 @@
         <button class="side-btn" data-action="Timer">⏲ Timer</button>
         <button class="side-btn" data-action="Email">✉ Email</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
-        <button class="side-btn" data-action="NewSpeechDoc">Create Speech Doc</button>
-        <button class="side-btn" data-action="SendSpeechDoc">Send to Speech Doc</button>
+        <button class="side-btn" data-action="NewSpeechDoc" title="Create a new speech doc">+ Speech Doc</button>
+        <button class="side-btn" data-action="SendSpeechDoc" title="Send selected content to current speech doc">➤ Speech Doc</button>
+        <button class="side-btn" data-action="SelectSpeechDoc">Select Speech Doc</button>
         <button class="side-btn" data-action="Wikify">❝❞ Wikify</button>
         <button class="side-btn" data-action="OpenCaseList">🗀 Caselist</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" id="SettingsBtn">⛯ Settings</button>
         <a class="side-btn" href="https://www.example.com" style="color:navy;">ⓘ Help</a>
-        <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         </div>
         <div id="folder-tree-host"></div>
       </div>
@@ -238,11 +238,10 @@
             <option value="Arial">Arial</option>
             <option value="Times New Roman">Times New Roman</option>
             </select></label>
-            <label class="settings-row">Card/Normal Text<input name="ntextSize"></label>
-            <label class="settings-row">Pocket/Heading 1<input name="h1Size"></label>
-            <label class="settings-row">Hat/Heading 2<input name="h2Size"></label>
-            <label class="settings-row">Block/Heading 3<input name="h3Size"></label>
-            <label class="settings-row">Tag/Heading 4<input name="h4Size"></label>
+            <label class="settings-row">Pocket font size<input name="h1Size"></label>
+            <label class="settings-row">Hat font size<input name="h2Size"></label>
+            <label class="settings-row">Block font size<input name="h3Size"></label>
+            <label class="settings-row">Tag font size<input name="h4Size"></label>
         </details>
         <details class="settings-detail" id="Features"><summary><span>Features</span></summary>
             <label class="settings-row">Cut Text in Read Mode?<input type="checkbox" name="cutTextReadMode"></label>

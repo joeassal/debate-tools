@@ -79,7 +79,6 @@
         }
         #searchBar {
           box-sizing: border-box;
-          min-height: 20px;
           border: 1px solid #dadce0;
           font-size: 10px;
           padding: 2px 4px;

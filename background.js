@@ -1,5 +1,72 @@
 let attachedTabs = new Set();
-let speechDocID=null;
+let speechDocs = new Map();
+let activeSpeechDocID = null;
+
+function isGoogleDocUrl(url) {
+    return Boolean(url && url.includes("https://docs.google.com/document/d/"));
+}
+
+async function registerSpeechDoc(tabId) {
+    const tab = await chrome.tabs.get(tabId);
+    if (!isGoogleDocUrl(tab.url)) {
+        throw new Error("Selected tab is not a Google Doc.");
+    }
+
+    const speechDoc = {
+        id: tabId,
+        title: tab.title || "Untitled speech doc",
+        url: tab.url,
+        windowId: tab.windowId
+    };
+
+    speechDocs.set(tabId, speechDoc);
+    activeSpeechDocID = tabId;
+    return speechDoc;
+}
+
+async function getLiveSpeechDocs() {
+    const liveSpeechDocs = [];
+
+    for (const [tabId, speechDoc] of speechDocs) {
+        try {
+            const tab = await chrome.tabs.get(tabId);
+            if (!isGoogleDocUrl(tab.url)) {
+                speechDocs.delete(tabId);
+                continue;
+            }
+
+            const updatedSpeechDoc = {
+                ...speechDoc,
+                title: tab.title || speechDoc.title,
+                url: tab.url,
+                windowId: tab.windowId
+            };
+            speechDocs.set(tabId, updatedSpeechDoc);
+            liveSpeechDocs.push(updatedSpeechDoc);
+        } catch (error) {
+            speechDocs.delete(tabId);
+        }
+    }
+
+    if (activeSpeechDocID && !speechDocs.has(activeSpeechDocID)) {
+        activeSpeechDocID = liveSpeechDocs[0] && liveSpeechDocs[0].id || null;
+    }
+
+    return liveSpeechDocs;
+}
+
+async function getActiveSpeechDocId() {
+    await getLiveSpeechDocs();
+    return activeSpeechDocID;
+}
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+    speechDocs.delete(tabId);
+    if (activeSpeechDocID === tabId) {
+        activeSpeechDocID = speechDocs.keys().next().value || null;
+    }
+});
+
 async function ensureDebuggerAttached(tabId) {
     if (attachedTabs.has(tabId)) {
         return; // Already attached, nothing to do
@@ -232,14 +299,42 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({ success: true });
                 return;
             }
-            else if(message.action == "newSpeechDoc") {
-                if(speechDocID) {
-                    try {
-                        await chrome.tabs.get(speechDocID);
-                        sendResponse({ success: false, message: "Sorry! You can only have one speech doc open at a time, new implementation coming soon. \nFor now, you can use google docs subtabs for multiple speeches." });
-                        return;
-                    } catch (e) {}
+            else if (message.action === "getGoogleDocTabs") {
+                const tabs = await chrome.tabs.query({ url: "https://docs.google.com/document/d/*" });
+                sendResponse({
+                    success: true,
+                    tabs: tabs.map((tab) => ({
+                        id: tab.id,
+                        title: tab.title || "Untitled Google Doc",
+                        url: tab.url,
+                        windowId: tab.windowId
+                    })),
+                    activeSpeechDocID
+                });
+                return;
+            }
+            else if (message.action === "getSpeechDocs") {
+                const docs = await getLiveSpeechDocs();
+                sendResponse({ success: true, speechDocs: docs, activeSpeechDocID });
+                return;
+            }
+            else if (message.action === "registerSpeechDoc") {
+                const speechDoc = await registerSpeechDoc(message.tabId);
+                sendResponse({ success: true, speechDoc, activeSpeechDocID });
+                return;
+            }
+            else if (message.action === "selectSpeechDoc") {
+                await getLiveSpeechDocs();
+                if (!speechDocs.has(message.tabId)) {
+                    await registerSpeechDoc(message.tabId);
+                } else {
+                    activeSpeechDocID = message.tabId;
                 }
+                sendResponse({ success: true, activeSpeechDocID });
+                return;
+            }
+            else if(message.action == "newSpeechDoc") {
+                let newTab;
                 if (message.newWindow !== false) {
                     const speechWindow = await new Promise((resolve) => {
                         chrome.windows.create({
@@ -249,21 +344,49 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                             height: 700
                         }, resolve);
                     });
-                    speechDocID = speechWindow.tabs[0].id;
+                    newTab = speechWindow.tabs[0];
                 } else {
-                    const speechTab = await new Promise((resolve) => {
+                    newTab = await new Promise((resolve) => {
                         chrome.tabs.create({ url: "https://docs.google.com/document/create" }, resolve);
                     });
-                    speechDocID = speechTab.id;
                 }
-                sendResponse({ success: true });
+
+                const tabId = await new Promise((resolve) => {
+                    const listener = (updatedTabId, changeInfo, tab) => {
+                        if (updatedTabId === newTab.id && changeInfo.status === "complete" && isGoogleDocUrl(tab.url)) {
+                            chrome.tabs.onUpdated.removeListener(listener);
+                            resolve(updatedTabId);
+                        }
+                    };
+                    chrome.tabs.onUpdated.addListener(listener);
+                    setTimeout(() => resolve(newTab.id), 5000);
+                });
+
+                let speechDoc = null;
+                try {
+                    speechDoc = await registerSpeechDoc(tabId);
+                } catch (error) {
+                    activeSpeechDocID = tabId;
+                    speechDocs.set(tabId, {
+                        id: tabId,
+                        title: "New speech doc",
+                        url: "https://docs.google.com/document/create",
+                        windowId: newTab.windowId
+                    });
+                    speechDoc = speechDocs.get(tabId);
+                }
+
+                sendResponse({ success: true, speechDoc, activeSpeechDocID });
             }
             else if(message.action == "sendSpeechDoc") {
-                if(!speechDocID) { sendResponse({ success: false, message: "There is no open speech document to send to. Create a new speech document first." }); return; }
+                const speechDocID = message.tabId || await getActiveSpeechDocId();
+                if(!speechDocID) { sendResponse({ success: false, message: "There is no selected speech document. Create one or select an existing Google Doc as a speech doc first." }); return; }
                 try {
                     await chrome.tabs.get(speechDocID);
                 } catch (e) {
-                    sendResponse({ success: false, message: "There is no open speech document to send to. Create a new speech document first." }); return;
+                    speechDocs.delete(speechDocID);
+                    if (activeSpeechDocID === speechDocID) activeSpeechDocID = null;
+                    sendResponse({ success: false, message: "The selected speech document is no longer open. Create one or select another Google Doc." }); return;
                 }
                 try {
                     await focusTabAndEditor(sender.tab.id);
