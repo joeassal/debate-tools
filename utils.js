@@ -79,7 +79,20 @@
     });
   };
 
+  function convertToMac(shortcutLabel) {
+    temp = shortcutLabel
+    if(navigator.userAgent.includes("Mac")) {
+      if(temp.includes("Shift") || temp.includes("Alt")) {
+        temp=temp.replace("Alt", "Option")
+        temp=temp.replace("Ctrl", "⌘")
+      } else {
+        temp=temp.replace("Ctrl+", "⌘")
+      }
+    }
+    return temp
+  }
   DebateTools.clickDocsMenuShortcut = async function clickDocsMenuShortcut(shortcutLabel) {
+    shortcutLabel=convertToMac(shortcutLabel)
     const shortcutSelector = `span[aria-label="${shortcutLabel}"]`;
     let shortcutSpan = document.querySelector(shortcutSelector);
 
@@ -94,6 +107,8 @@
   };
 
   DebateTools.clickHeader = async function clickHeader(shortcutLabel) { 
+    shortcutLabel=convertToMac(shortcutLabel)
+
     DebateTools.clickDocButton("headingStyleSelect");
 
     const headingMenuItemSelector = ".goog-menuitem.goog-option.goog-submenu.docs-submenuitem.apps-menuitem";
