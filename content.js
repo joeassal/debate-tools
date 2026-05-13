@@ -91,7 +91,7 @@
     Readmode: async () => await DebateTools.readMode(),
     Importdocx: async () => await DebateTools.ImportDocX(),
     ImportdocxToClipboard: async () => await DebateTools.ImportDocXtoClipboard(),
-    Exportdocx: () => DebateTools.ExportDocX(),
+    Exportdocx: async () => await DebateTools.ExportDocX(),
     Exportpdf: () => DebateTools.ExportPDF(),
     SendSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "sendSpeechDoc" }, (response) => {if(response && !response.success) { alert(response.message); }}),
     NewSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "newSpeechDoc", newWindow: DebateTools.getSetting("speechDocNewWindow") }, (response) => {if(response && !response.success) { alert(response.message); }}),
@@ -100,7 +100,9 @@
     Email: async () => await DebateTools.clickDocsMenuShortcut("Email this file a"),
     Wikify: async () => await DebateTools.wikify(),
     StandardizeHighlights: async () => await DebateTools.standardizeHighlights(),
-    OpenCaseList: async () => await DebateTools.openCaselist()
+    OpenCaseList: async () => await DebateTools.openCaselist(),
+    SendSelectionToFlow: async () => await DebateTools.sendToFlow(),
+    ExtrapolateFlow: async () => await DebateTools.ExtrapolateToFlow(),
   };
 
   //init keybinds

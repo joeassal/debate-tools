@@ -12,17 +12,61 @@ const deleteTabButton = document.getElementById("delete-tab");
 const clearFlowsButton = document.getElementById("clear-flows");
 
 let workbook = loadFlow();
+let activeCell = { row: 0, col: 0, selectionStart: 0, selectionEnd: 0 };
 
 speechOrderInput.value = newFlowColumns.join(",");
 saveFlow();
+
+//handle runtime listeners
+const flowPort = chrome.runtime.connect({ name: "flow-panel" });
+flowPort.onMessage.addListener((message) => {
+  if (message.action === "selectToFlow") {
+    insertTextIntoActiveCell(message.text);
+  } else if (message.action === "extrapolate") {
+    addTabFromColumnName(prompt("Flow name?"), message.cells, prompt("Speech to flow doc to?"))
+  }
+});
+function addTabFromColumnName(name, cells, columnName, columns = newFlowColumns) {
+  const normalizedColumnName = String(columnName || "").trim().toUpperCase();
+  const columnIndex = normalizeColumns(columns).indexOf(normalizedColumnName);
+  if (columnIndex === -1) return;
+
+  addTabFromColumnCells(name, cells, columnIndex, columns);
+}
+function addTabFromColumnCells(name, cells, columnIndex, columns = newFlowColumns) {
+  const tabColumns = normalizeColumns(columns);
+  const columnCells = Array.isArray(cells) ? cells : String(cells || "").split(/\r?\n/);
+
+  const rows = columnCells.map((cellText) => {
+    const row = Array(tabColumns.length).fill("");
+    row[columnIndex] = cellText;
+    return row;
+  });
+
+  workbook.tabs.push({
+    name,
+    columns: tabColumns,
+    rows: normalizeRows(rows, tabColumns),
+  });
+
+  workbook.activeTabIndex = workbook.tabs.length - 1;
+  render();
+  saveFlow();
+  focusCell(0, columnIndex);
+}
 
 function parseSpeechOrder(value) {
   const parsedColumns = String(value || "")
     .split(",")
     .map((column) => column.trim())
+    .map((column) => column.toUpperCase())
     .filter(Boolean);
 
   return parsedColumns.length ? parsedColumns : defaultColumns;
+}
+
+function normalizeColumns(columns) {
+  return parseSpeechOrder(Array.isArray(columns) ? columns.join(",") : columns);
 }
 
 function loadSpeechOrder() {
@@ -174,15 +218,52 @@ function clearAllFlows() {
   focusCell(0, 0);
 }
 
-function focusCell(row, col) {
+function focusCell(row, col, cursorPosition) {
   ensureCell(row, col);
+  activeCell = {
+    row,
+    col,
+    selectionStart: cursorPosition ?? getActiveRows()[row][col].length,
+    selectionEnd: cursorPosition ?? getActiveRows()[row][col].length,
+  };
   render();
 
   const cell = sheet.querySelector(`[data-row="${row}"][data-col="${col}"]`);
   if (cell) {
     cell.focus();
-    moveCursorToEnd(cell);
+    if (cursorPosition === undefined) {
+      moveCursorToEnd(cell);
+    } else {
+      cell.setSelectionRange(cursorPosition, cursorPosition);
+    }
   }
+}
+
+function updateActiveCellFromElement(cell) {
+  activeCell = {
+    row: Number(cell.dataset.row),
+    col: Number(cell.dataset.col),
+    selectionStart: cell.selectionStart,
+    selectionEnd: cell.selectionEnd,
+  };
+}
+
+function insertTextIntoActiveCell(text) {
+  const insertion = String(text || "");
+  if (!insertion) return;
+
+  const { row, col, selectionStart, selectionEnd } = activeCell;
+  ensureCell(row, col);
+
+  const currentValue = getActiveRows()[row][col] || "";
+  const start = Math.max(0, Math.min(selectionStart, currentValue.length));
+  const end = Math.max(start, Math.min(selectionEnd, currentValue.length));
+  const nextValue = currentValue.slice(0, start) + insertion + currentValue.slice(end);
+  const nextCursor = start + insertion.length;
+
+  getActiveRows()[row][col] = nextValue;
+  saveFlow();
+  focusCell(row, col, nextCursor);
 }
 
 function render() {
@@ -234,10 +315,15 @@ function renderSheet() {
 
       cell.addEventListener("input", () => {
         getActiveRows()[rowIndex][colIndex] = cell.value;
+        updateActiveCellFromElement(cell);
         resizeCell(cell);
         saveFlow();
       });
 
+      cell.addEventListener("focus", () => updateActiveCellFromElement(cell));
+      cell.addEventListener("click", () => updateActiveCellFromElement(cell));
+      cell.addEventListener("select", () => updateActiveCellFromElement(cell));
+      cell.addEventListener("keyup", () => updateActiveCellFromElement(cell));
       cell.addEventListener("keydown", handleCellKeydown);
       sheet.appendChild(cell);
       resizeCell(cell);

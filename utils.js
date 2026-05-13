@@ -95,7 +95,7 @@
     shortcutLabel=convertToMac(shortcutLabel)
     const shortcutSelector = `span[aria-label="${shortcutLabel}"]`;
     let shortcutSpan = document.querySelector(shortcutSelector);
-
+    
     if (!shortcutSpan) {
       DebateTools.clickDocButton("docs-edit-menu");
       shortcutSpan = await DebateTools.waitForElement(shortcutSelector);
@@ -184,9 +184,16 @@
     });
   };
   
-  DebateTools.getSelection = async function getSelection() {
+  DebateTools.getSelection = async function getSelection(html=false) {
+    const startCB2 = await navigator.clipboard.read()
     await DebateTools.clickDocsMenuShortcut("Ctrl+C")
     const CB = await DebateTools.checkClipboard();
+    await navigator.clipboard.write(startCB2);
+    if(html) {
+      const container=document.createElement("div")
+      container.innerHTML=CB
+      return container
+    }
     return CB;
   };
   DebateTools.pasteHTML = async function pasteHTML(html) {
@@ -420,11 +427,15 @@
       console.log("Picker closed or failed", err);
     }
   };
-  DebateTools.ExportDocX = function ExportDocX() {
-    const originalUrl = window.location.href;
-    const editIndex = originalUrl.indexOf("/edit");
-    const exportUrl = originalUrl.substring(0, editIndex) + "/export?format=docx";
-    window.location.href = exportUrl;
+  DebateTools.ExportDocX = async function ExportDocX() {
+    const downloadd = await DebateTools.waitForElement('span[aria-label="Download d"]');
+    DebateTools.hoverElement(downloadd)
+    await DebateTools.clickDocsMenuShortcut("Microsoft Word (.docx) x")
+    DebateTools.clickDocButton("docs-file-menu");
+    // const originalUrl = window.location.href;
+    // const editIndex = originalUrl.indexOf("/edit");
+    // const exportUrl = originalUrl.substring(0, editIndex) + "/export?format=docx";
+    // window.location.href = exportUrl;
   };
   DebateTools.ExportPDF = function ExportPDF() {
     const originalUrl = window.location.href;
@@ -544,6 +555,56 @@
     }
 
     alert(`Selected speech doc: ${selectedTab.title}`);
+  }
+
+  DebateTools.sendToFlow = async () => {
+    chrome.runtime.sendMessage({ action: "openSidePanel" });
+    const startCB2 = await navigator.clipboard.read();
+    await DebateTools.clickDocsMenuShortcut("Ctrl+C")
+    const selection = await navigator.clipboard.readText()
+    await navigator.clipboard.write(startCB2);
+    await chrome.runtime.sendMessage({
+      action: "toFlow",
+      message: {
+        text: selection,
+        action: "selectToFlow"
+      }
+    })
+  }
+  DebateTools.ExtrapolateToFlow = async () => {
+    chrome.runtime.sendMessage({ action: "openSidePanel" });
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+    const container = await DebateTools.getSelection(true)
+
+    let cells=[]
+    const pgs = container.querySelector("b")
+    for (const pg of pgs.children) {
+      if(pg.tagName.includes("H")) {
+        // if(Integer.parseInt(pg.tagName)>1) {
+
+        // }
+        cells.push("")
+        cells.push("--" + pg.innerText + "--")
+      } else  {
+        let kc = ""
+        pg.querySelectorAll("span").forEach(span => {
+          if(span.style.fontWeight>400 && parseInt(span.style.fontSize)>=13 && span.style.backgroundColor==="transparent") {
+            kc += span.innerText
+          }
+        })
+        if(kc!="") {
+          cells.push(kc)
+          cells.push("")
+        }
+      }
+    }
+    await chrome.runtime.sendMessage({
+      action: "toFlow",
+      message: {
+        cells: cells,
+        action: "extrapolate"
+      }
+    })
   }
 
   global.DebateTools = DebateTools;

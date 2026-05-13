@@ -67,6 +67,17 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     }
 });
 
+let flowPort = null;
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== "flow-panel") return;
+
+  flowPort = port;
+
+  port.onDisconnect.addListener(() => {
+    if (flowPort === port) flowPort = null;
+  });
+});
+
 async function ensureDebuggerAttached(tabId) {
     if (attachedTabs.has(tabId)) {
         return; // Already attached, nothing to do
@@ -423,7 +434,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     chrome.tabs.onUpdated.addListener(listener);
                 });
                 sendResponse({ success: true });
-            } else {
+            }
+            else if (message.action === "toFlow") {
+                if (!flowPort) {
+                    sendResponse({ success: false, error: "Flow panel is not open." });
+                    return;
+                }
+
+                flowPort.postMessage(message.message);
+                sendResponse({ success: true });
+                return;
+            } 
+            else {
                 await sendUniversalShortcut(sender.tab.id, message.action, message.useShift, message.useAlt);
                 sendResponse({ success: true });
             }

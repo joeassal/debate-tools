@@ -193,15 +193,15 @@
         </select>
         </label>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
-        <button class="side-btn" data-action="Importdocx">🗁 Quick Import DOCX</button>
         <button class="side-btn" data-action="ImportdocxToClipboard">⇩ Import to Clipboard</button>
         <button class="side-btn" data-action="Exportdocx">🗎 Export DOCX</button>
-        <button class="side-btn" data-action="Exportpdf">🗎 Export PDF</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" data-action="Readmode">🕮 Read Mode</button>
-        <button id="flow-btn" class="side-btn" data-action="Flow">✎ Flow</button>
         <button class="side-btn" data-action="Timer">⏲ Timer</button>
         <button class="side-btn" data-action="Email">✉ Email</button>
+        <button id="flow-btn" class="side-btn" data-action="Flow">✎ Flow</button>
+        <button id="flow-btn" class="side-btn" data-action="SendSelectionToFlow">Send To Flow</button>
+        <button id="flow-btn" class="side-btn" data-action="ExtrapolateFlow">Flow Doc</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" data-action="NewSpeechDoc" title="Create a new speech doc">+ Speech Doc</button>
         <button class="side-btn" data-action="SendSpeechDoc" title="Send selected content to current speech doc">➤ Speech Doc</button>
