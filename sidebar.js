@@ -249,6 +249,9 @@
             <label class="settings-row">New window when making speech doc?<input type="checkbox" name="speechDocNewWindow"></label>
             <label class="settings-row">Convert to normal text when clearing formatting?<input type="checkbox" name="normalTextOnClear"></label>
         </details>
+        <details class="settings-detail"><summary><span>Flow</span></summary>
+            <label class="settings-row">Replacement words<input type="checkbox" name="fillerFlowWords"></label>
+        </details>
         <details class="settings-detail"><summary><span>Virtual Tub</span></summary>
             <label class="settings-row">Show Virtual Tub?<input type="checkbox" name="showFolderTree"></label>
             <label class="settings-row">Ask to confirm when rewriting?<input type="checkbox" name="confirmOnRewrite"></label>

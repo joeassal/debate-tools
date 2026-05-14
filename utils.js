@@ -571,6 +571,13 @@
       }
     })
   }
+  function replaceFiller(text) {
+    // "the: ,impacts:impx,"
+    for(let ts of DebateTools.getSetting("fillerFlowWords")) {
+      text=text.replaceAll(ts.initial, ts.replacement)
+    }
+    return text
+  }
   DebateTools.ExtrapolateToFlow = async () => {
     chrome.runtime.sendMessage({ action: "openSidePanel" });
     await DebateTools.clickDocsMenuShortcut("Ctrl+A")
@@ -584,16 +591,19 @@
 
         // }
         cells.push("")
-        cells.push("--" + pg.innerText + "--")
+        cells.push("--" + replaceFiller(pg.innerText) + "--")
       } else  {
         let kc = ""
         pg.querySelectorAll("span").forEach(span => {
-          if(span.style.fontWeight>400 && parseInt(span.style.fontSize)>=13 && span.style.backgroundColor==="transparent") {
+          if(pg.tagName==="OL") {
+            cells.push(replaceFiller(span.innerText))
+            cells.push("")
+          } else if(span.style.fontWeight>400 && parseInt(span.style.fontSize)>=13 && span.style.backgroundColor==="transparent") {
             kc += span.innerText
           }
         })
         if(kc!="") {
-          cells.push(kc)
+          cells.push(replaceFiller(kc))
           cells.push("")
         }
       }
