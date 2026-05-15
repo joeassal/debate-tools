@@ -29,6 +29,7 @@
     h2Size: "22",
     h3Size: "16",
     h4Size: "13",
+    fillerFlowWords: "links:lx,the: ,topicality:T"
   }
 
   DebateTools.loadSettings = function loadSettings() {

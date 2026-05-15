@@ -250,7 +250,7 @@
             <label class="settings-row">Convert to normal text when clearing formatting?<input type="checkbox" name="normalTextOnClear"></label>
         </details>
         <details class="settings-detail"><summary><span>Flow</span></summary>
-            <label class="settings-row">Replacement words<input type="checkbox" name="fillerFlowWords"></label>
+            <label class="settings-row">Shorthand when sending to flow<input type="text" name="fillerFlowWords" placeholder="topicality:T,links:LX"></label>
         </details>
         <details class="settings-detail"><summary><span>Virtual Tub</span></summary>
             <label class="settings-row">Show Virtual Tub?<input type="checkbox" name="showFolderTree"></label>

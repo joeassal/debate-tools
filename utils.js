@@ -556,7 +556,16 @@
 
     alert(`Selected speech doc: ${selectedTab.title}`);
   }
-
+  function replaceFiller(text) {
+    // "the: ,impacts:impx,"
+    const arr = DebateTools.getSetting("fillerFlowWords").split(",")
+    for(let ts of arr) {
+      const tsWord=ts.split(":")
+      console.log(tsWord)
+      text=text.replaceAll(new RegExp(tsWord[0], "gi"), tsWord[1])
+    }
+    return text
+  }
   DebateTools.sendToFlow = async () => {
     chrome.runtime.sendMessage({ action: "openSidePanel" });
     const startCB2 = await navigator.clipboard.read();
@@ -566,18 +575,12 @@
     await chrome.runtime.sendMessage({
       action: "toFlow",
       message: {
-        text: selection,
+        text: replaceFiller(selection),
         action: "selectToFlow"
       }
     })
   }
-  function replaceFiller(text) {
-    // "the: ,impacts:impx,"
-    for(let ts of DebateTools.getSetting("fillerFlowWords")) {
-      text=text.replaceAll(ts.initial, ts.replacement)
-    }
-    return text
-  }
+
   DebateTools.ExtrapolateToFlow = async () => {
     chrome.runtime.sendMessage({ action: "openSidePanel" });
     await DebateTools.clickDocsMenuShortcut("Ctrl+A")
