@@ -103,6 +103,7 @@
     Wikify: async () => await DebateTools.wikify(),
     StandardizeHighlights: async () => await DebateTools.standardizeHighlights(),
     OpenCaseList: async () => await DebateTools.openCaselist(),
+    Flow: async () => await chrome.runtime.sendMessage({ action: "openSidePanel" }),
     SendSelectionToFlow: async () => await DebateTools.sendToFlow(),
     ExtrapolateFlow: async () => await DebateTools.ExtrapolateToFlow(),
   };

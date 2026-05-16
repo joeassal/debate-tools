@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flow</title>
+  <title>CardFlow</title>
   <style>
     * {
       box-sizing: border-box;
@@ -14,8 +14,8 @@
       height: 100vh;
       overflow: hidden;
       font-family: Calibri, Arial, sans-serif;
-      background: #f7f8fb;
-      color: #1f2937;
+      background: #f5f7fb;
+      color: #172033;
     }
 
     .app {
@@ -25,12 +25,13 @@
     }
 
     .toolbar {
-      height: 38px;
+      min-height: 42px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 8px;
-      border-bottom: 1px solid #cfd6e4;
+      gap: 10px;
+      padding: 6px 10px;
+      border-bottom: 1px solid #d6dcea;
       background: #ffffff;
       flex: 0 0 auto;
     }
@@ -38,46 +39,99 @@
     .title {
       font-size: 13px;
       font-weight: 700;
+      letter-spacing: 0;
+      white-space: nowrap;
     }
 
     .toolbar button {
-      border: 1px solid #c8d0dd;
-      background: #ffffff;
+      min-height: 26px;
+      border: 1px solid #c6cfdf;
+      background: #f8fafc;
       border-radius: 4px;
       font-size: 11px;
-      padding: 4px 7px;
+      padding: 4px 8px;
       cursor: pointer;
+      color: #1f2937;
+      white-space: nowrap;
+      transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
     }
 
     .toolbar button:hover {
       background: #eef2ff;
+      border-color: #95a3d6;
+    }
+
+    .toolbar button:focus-visible,
+    .tab:focus-visible,
+    .tab-action:focus-visible,
+    .speech-order-label input:focus {
+      outline: none;
+      border-color: #2d3c80;
+      box-shadow: 0 0 0 2px rgba(45, 60, 128, 0.16);
     }
 
     .toolbar-actions {
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .speech-order-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #475569;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .speech-order-label input {
+      width: 190px;
+      min-height: 26px;
+      padding: 4px 7px;
+      border: 1px solid #c6cfdf;
+      border-radius: 4px;
+      background: #ffffff;
+      color: #172033;
+      font: inherit;
+      font-size: 11px;
     }
 
     .tabs {
       display: flex;
       align-items: center;
       gap: 4px;
-      padding: 5px 6px;
-      border-bottom: 1px solid #cfd6e4;
+      padding: 6px 8px;
+      border-bottom: 1px solid #d6dcea;
       background: #ffffff;
       overflow-x: auto;
       flex: 0 0 auto;
     }
 
+    #tabs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+    }
+
     .tab {
-      border: 1px solid #c8d0dd;
+      border: 1px solid #c6cfdf;
       background: #f8fafc;
       border-radius: 4px;
       font-size: 11px;
-      padding: 4px 8px;
+      padding: 5px 9px;
       cursor: pointer;
       white-space: nowrap;
+      color: #263246;
+      transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .tab:hover {
+      background: #eef2ff;
+      border-color: #95a3d6;
     }
 
     .tab.active {
@@ -89,11 +143,13 @@
     .tab-action {
       width: 24px;
       height: 24px;
-      border: 1px solid #c8d0dd;
-      background: #ffffff;
+      border: 1px solid #c6cfdf;
+      background: #f8fafc;
       border-radius: 4px;
       cursor: pointer;
       flex: 0 0 auto;
+      color: #263246;
+      line-height: 1;
     }
 
     .tab-action:hover {
@@ -109,6 +165,7 @@
       min-width: 720px;
       display: grid;
       align-items: stretch;
+      background: #d9dee8;
     }
 
     .corner,
@@ -161,21 +218,33 @@
       color: #111827;
       background: #ffffff;
       outline: none;
+      transition: background-color 0.12s, box-shadow 0.12s;
     }
 
     .cell.col-even {
       background: #ffffff;
-      color: royalblue;
+      color: #1d4ed8;
     }
 
     .cell.col-odd {
-      background: #f4f7fb;
-      color: crimson;
+      background: #f8fafc;
+      color: #b91c1c;
     }
 
     .cell:focus {
       box-shadow: inset 0 0 0 2px #2d3c80;
       background: #fbfdff;
+    }
+
+    @media (max-width: 760px) {
+      .toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .toolbar-actions {
+        justify-content: flex-start;
+      }
     }
   </style>
 </head>
@@ -184,7 +253,7 @@
     <div class="toolbar">
       <div class="title">Flow</div>
       <div class="toolbar-actions">
-        <label>Speech Order: <input type="text" id="speechOrder" placeholder="1AC,1NC,2AR,2NR,2AR" style="width: 190px; padding: 4px 6px; border: 1px solid #c8d0dd; border-radius: 4px; font: inherit; font-size: 11px;"></label>
+        <label class="speech-order-label">Speech Order <input type="text" id="speechOrder" placeholder="1AC,1NC,2AR,2NR,2AR"></label>
         <button id="export-flow" type="button">Export</button>
         <button id="import-flow" type="button">Import</button>
         <input id="import-flow-file" type="file" accept="application/json,.json" hidden>

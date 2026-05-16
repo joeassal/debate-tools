@@ -581,7 +581,7 @@
     })
   }
 
-  DebateTools.ExtrapolateToFlow = async () => {
+  DebateTools.ExtrapolateToFlow = async (sendAll=true) => {
     await DebateTools.clickDocsMenuShortcut("Ctrl+A")
     const container = await DebateTools.getSelection(true)
     chrome.runtime.sendMessage({ action: "openSidePanel" });

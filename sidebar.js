@@ -99,7 +99,7 @@
       if (!isResizing) return;
 
       const maxWidth = window.innerWidth * 0.5;
-      const minWidth = 280;
+      const minWidth = 220;
       const newWidth = window.innerWidth - e.clientX;
 
       if (newWidth >= minWidth && newWidth <= maxWidth) {
@@ -119,7 +119,7 @@
   }
 
   function attachSidebarButtonListeners(sidebar) {
-    sidebar.querySelectorAll(".side-btn").forEach((btn) => {
+    sidebar.querySelectorAll(".side-btn[data-action]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         DebateTools.focusDocsEditor();
         await new Promise((resolve) => setTimeout(resolve, 50));
@@ -154,19 +154,20 @@
       right: 0;
       width: 280px;
       height: 100vh;
-      background: #ffffff;
+      background: #f8fafc;
       z-index: 1000000;
-      border-left: 1px solid #d1d1d1;
+      border-left: 1px solid #cfd6e4;
       display: flex;
       flex-direction: column;
       font-family: Calibri, sans-serif;
-      box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+      color: #172033;
+      box-shadow: -6px 0 18px rgba(15, 23, 42, 0.14);
     `;
 
     sidebar.innerHTML = /* html */ `
-      <div style="padding: 15px; background: #2d3c80; color: white; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
-        <span>Debate Tools</span>
-        <button id="close-sidebar" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">x</button>
+      <div class="sidebar-header">
+        <span>CardFlow - Debate Tools</span>
+        <button id="close-sidebar" type="button" title="Close">x</button>
       </div>
       <div class="sidebar-control-grid">
         <div class="sidebar-button-grid">
@@ -202,18 +203,32 @@
         <button class="side-btn" data-action="Timer">⏲ Timer</button>
         <button class="side-btn" data-action="SpeechDrop">⏲ Speech Drop</button>
         <button class="side-btn" data-action="Email">✉ Email</button>
-        <button id="flow-btn" class="side-btn" data-action="Flow">✎ Flow</button>
-        <button id="flow-btn" class="side-btn" data-action="SendSelectionToFlow">Send To Flow</button>
-        <button id="flow-btn" class="side-btn" data-action="ExtrapolateFlow">Flow Doc</button>
-        <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
-        <button class="side-btn" data-action="NewSpeechDoc" title="Create a new speech doc">+ Speech Doc</button>
-        <button class="side-btn" data-action="SendSpeechDoc" title="Send selected content to current speech doc">➤ Speech Doc</button>
-        <button class="side-btn" data-action="SelectSpeechDoc">Select Speech Doc</button>
+        <div class="action-menu">
+          <button class="side-btn action-menu-main" data-action="Flow">Flow 🖉</button>
+          <details class="action-menu-dropdown">
+            <summary title="Flow options">More</summary>
+            <div class="action-menu-list">
+              <button class="side-btn" data-action="SendSelectionToFlow">Send to Flow</button>
+              <button class="side-btn" data-action="ExtrapolateFlow">Flow Doc</button>
+            </div>
+          </details>
+        </div>
+        <div class="action-menu" aria-label="Speech document actions">
+          <button class="side-btn action-menu-main" data-action="NewSpeechDoc" title="Create a new speech doc">+ Speech Doc</button>
+          <details class="action-menu-dropdown">
+            <summary title="Speech doc options">More</summary>
+            <div class="action-menu-list action-menu-list-wide">
+              <button class="side-btn" data-action="SendSpeechDoc" title="Send selected content to current speech doc">Send to Speech Doc</button>
+              <button class="side-btn" data-action="SelectSpeechDoc" title="Select an open speech doc">Select Speech Doc</button>
+            </div>
+          </details>
+        </div>
+        <hr>
         <button class="side-btn" data-action="Wikify">❝❞ Wikify</button>
         <button class="side-btn" data-action="OpenCaseList">🗀 Caselist</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" id="SettingsBtn">⛯ Settings</button>
-        <a class="side-btn" href="https://www.example.com" style="color:navy;">ⓘ Help</a>
+        <a class="side-btn" href="https://www.example.com">ⓘ Help</a>
         </div>
         <br>
         <div id="folder-tree-host"></div>
@@ -275,21 +290,66 @@
       <style>
         .side-btn {
           flex: 0 0 auto;
-          display: block;
+          display: flex;
+          align-items: center;
           box-sizing: border-box;
           width: 100%;
-          padding: 4px 6px;
+          min-height: 28px;
+          padding: 5px 7px;
           cursor: pointer;
-          border: 1px solid #dadce0;
-          background: white;
+          border: 1px solid #cfd6e4;
+          border-radius: 4px;
+          background: #ffffff;
           text-align: left;
           text-decoration: none;
-          color: inherit;
+          color: #172033;
           font-size: 12px;
-          transition: background 0.2s;
+          line-height: 1.2;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
         }
-        .side-btn:hover { background: #f8f9fa; }
-        .side-btn:active { background: #e8eaed; }
+        .side-btn:hover {
+          background: #eef2ff;
+          border-color: #95a3d6;
+        }
+        .side-btn:active {
+          background: #e0e7ff;
+        }
+        .side-btn:focus-visible,
+        #close-sidebar:focus-visible,
+        #settings-close:focus-visible,
+        #settings-default:focus-visible,
+        #settings-setstyle:focus-visible {
+          outline: none;
+          border-color: #2d3c80;
+          box-shadow: 0 0 0 2px rgba(45, 60, 128, 0.16);
+        }
+        .sidebar-header {
+          min-height: 44px;
+          padding: 10px 12px;
+          background: #2d3c80;
+          color: #ffffff;
+          font-weight: bold;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          letter-spacing: 0;
+        }
+        #close-sidebar {
+          width: 26px;
+          height: 26px;
+          border: 1px solid rgba(255, 255, 255, 0.35);
+          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.08);
+          color: #ffffff;
+          cursor: pointer;
+          font-size: 16px;
+          line-height: 1;
+        }
+        #close-sidebar:hover {
+          background: rgba(255, 255, 255, 0.18);
+        }
         .sidebar-control-grid {
           padding: 10px;
           display: flex;
@@ -297,6 +357,7 @@
           flex: 1;
           min-height: 0;
           overflow-y: auto;
+          overflow-x: hidden;
         }
         .sidebar-button-grid {
           display: grid;
@@ -306,6 +367,77 @@
         }
         .sidebar-button-grid hr {
           grid-column: 1 / -1;
+          width: 100%;
+          margin: 2px 0;
+          border: 0;
+          border-top: 1px solid #dfe5ef;
+        }
+        .action-menu {
+          grid-column: 1 / -1;
+          position: relative;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 74px;
+          border: 1px solid #cfd6e4;
+          border-radius: 4px;
+          background: #ffffff;
+        }
+        .action-menu .action-menu-main {
+          min-height: 32px;
+          border: 0;
+          border-radius: 0;
+          background: transparent;
+          font-weight: 450;
+        }
+        .action-menu .action-menu-main:hover {
+          background: #eef2ff;
+          border-color: transparent;
+        }
+        .action-menu-dropdown {
+          border-left: 1px solid #dfe5ef;
+        }
+        .action-menu-dropdown summary {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 32px;
+          padding: 0 8px;
+          cursor: pointer;
+          color: #172033;
+          font-size: 12px;
+          list-style: none;
+          user-select: none;
+        }
+        .action-menu-dropdown summary::-webkit-details-marker {
+          display: none;
+        }
+        .action-menu-dropdown summary::after {
+          content: "v";
+          margin-left: 5px;
+          font-size: 10px;
+          color: #64748b;
+        }
+        .action-menu-dropdown[open] summary {
+          background: #eef2ff;
+        }
+        .action-menu-list {
+          position: absolute;
+          top: calc(100% + 4px);
+          right: 0;
+          z-index: 2;
+          width: 154px;
+          padding: 4px;
+          border: 1px solid #cfd6e4;
+          border-radius: 4px;
+          background: #ffffff;
+          box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
+        }
+        .action-menu-list .side-btn {
+          justify-content: flex-start;
+          border: 0;
+          border-radius: 3px;
+        }
+        .action-menu-list-wide {
+          width: 176px;
         }
         .select-row {
           box-sizing: border-box;
@@ -314,10 +446,12 @@
           align-items: center;
           justify-content: space-between;
           gap: 6px;
-          padding: 4px 6px;
-          border: 1px solid #dadce0;
+          min-height: 28px;
+          padding: 5px 7px;
+          border: 1px solid #cfd6e4;
+          border-radius: 4px;
           background: #fff;
-          color: #202124;
+          color: #172033;
           font-size: 12px;
         }
         .highlight-select-row {
@@ -329,8 +463,9 @@
           min-height: 24px;
           padding: 2px 22px 2px 7px;
           border: 1px solid #c9d1d9;
+          border-radius: 4px;
           background-color: #f8fafc;
-          color: #202124;
+          color: #172033;
           cursor: pointer;
           font-family: Calibri, sans-serif;
           font-size: 12px;
@@ -340,7 +475,11 @@
         #highlight-color-select {
           width: auto;
           min-width: 0;
-          padding-right: 4px;
+          padding: 2px 4px;
+          appearance: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          text-align: center;
         }
         .sidebar-select:hover,
         #settings select:hover {
@@ -360,16 +499,17 @@
         }
         #settings {
           position: fixed;
-          top: 20%;
-          left: 70%;
+          top: 72px;
+          right: 12px;
           box-sizing: border-box;
           padding: 12px;
           border: 1px solid #c9d1d9;
+          border-radius: 6px;
           background: white;
-          width: 280px;
-          height: 350px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.11);
-          color: #202124;
+          width: min(320px, calc(100vw - 24px));
+          max-height: min(520px, calc(100vh - 96px));
+          box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+          color: #172033;
           font-size: 12px;
           overflow: auto;
         }
@@ -385,8 +525,9 @@
         #settings-close {
           width: 24px;
           height: 24px;
-          border: 1px solid #dadce0;
-          background: #fff; 
+          border: 1px solid #cfd6e4;
+          border-radius: 4px;
+          background: #fff;
           cursor: pointer;
           font-size: 12px;
         }
@@ -407,6 +548,7 @@
         }
         #settings-default, #settings-setstyle {
           border: 1px solid #dadce0;
+          border-radius: 4px;
           background: #f8fafc;
           cursor: pointer;
           padding: 3px 7px;
@@ -421,16 +563,12 @@
           grid-template-columns: minmax(0, 1fr) 128px;
           align-items: center;
           gap: 10px;
-          padding: 5px 0;
+          padding: 7px 0;
           border-top: 1px solid #f0f2f5;
         }
     </style>  
     `;
     document.body.appendChild(sidebar);
-
-    document.getElementById("flow-btn").addEventListener("click", () => {
-      chrome.runtime.sendMessage({ action: "openSidePanel" });
-    });
 
     // Settings logic
     function changeSetting(key, value) {
@@ -477,10 +615,10 @@
     }
 
     //keybinds
-    keybindsFormat = document.getElementById("keybindsFormat")
+    const keybindsFormat = document.getElementById("keybindsFormat")
     keybindsFormat.querySelectorAll("SELECT").forEach((tsKey) => {
       for(let i=1;i<=12;i++) {
-        option = document.createElement("option")
+        const option = document.createElement("option")
         option.value="F"+i
         option.innerHTML="F"+i
         tsKey.appendChild(option)

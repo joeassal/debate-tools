@@ -10,18 +10,20 @@
         <div id="tree"></div>
         <div class="exportbtns">
           <input id="searchBar" placeholder='Search...'>
-          <button id="export-tree-btn" class="treeBtn" title="Export Folder Tree">Export Tub</button>
-          <button id="import-tree-btn" class="treeBtn" title="Import Folder Tree">Import Tub</button>
+          <button id="export-tree-btn" class="treeBtn" title="Export Folder Tree">Export</button>
+          <button id="import-tree-btn" class="treeBtn" title="Import Folder Tree">Import</button>
         </div>
       </div>
       <style>
-        details {
+        .vTub details {
           margin-left: 10px;
         }
         .vTub {
           position: relative;
-          padding-top:6px;
-          border: 1px solid #a6bed1;
+          padding-top: 6px;
+          border: 1px solid #cfd6e4;
+          border-radius: 6px;
+          background: #ffffff;
           margin-top: auto;
           height: 23vh;
           min-height: 180px;
@@ -31,18 +33,33 @@
         #tree {
           height: 100%;
           padding-bottom: 28px;
+          padding-left: 6px;
+          padding-right: 6px;
           box-sizing: border-box;
           overflow-y: auto;
+          overflow-x: hidden;
+          color: #172033;
+          font-size: 11px;
         }
         .treeBtn {
-          border: 1px solid #dadce0;
-          background: none;
+          min-height: 20px;
+          border: 1px solid #cfd6e4;
+          border-radius: 4px;
+          background: #f8fafc;
+          color: #172033;
           cursor: pointer;
           font-size: 10px;
-          margin-left: 4px;
+          padding: 1px 5px;
         }
         .treeBtn:hover {
-          background-color: #5067ca;
+          background-color: #eef2ff;
+          border-color: #95a3d6;
+        }
+        .treeBtn:focus-visible,
+        #searchBar:focus {
+          outline: none;
+          border-color: #2d3c80;
+          box-shadow: 0 0 0 2px rgba(45, 60, 128, 0.16);
         }
         .tree-drag-handle {
           border: 1px solid transparent;
@@ -73,15 +90,38 @@
           right: 8px;
           bottom: 8px;
           display: flex;
-          gap: 2px;
+          gap: 4px;
+          align-items: center;
           z-index: 1;
-          font-size: 4px;
+          max-width: calc(100% - 16px);
         }
         #searchBar {
           box-sizing: border-box;
-          border: 1px solid #dadce0;
+          width: min(100px, 34vw);
+          min-height: 22px;
+          border: 1px solid #cfd6e4;
+          border-radius: 4px;
           font-size: 10px;
-          padding: 2px 4px;
+          padding: 2px 6px;
+          color: #172033;
+        }
+        .tree-file,
+        .vTub summary {
+          min-height: 22px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .tree-file-label {
+          max-width: 132px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          border: none;
+          background: transparent;
+          color: #172033;
+          cursor: pointer;
+          font-size: 10px;
+          text-align: left;
         }
       </style>
     `;
@@ -487,7 +527,7 @@
         const fileLabel = document.createElement("button");
         fileLabel.textContent = name + " ";
         fileLabel.type = "button";
-        fileLabel.style.cssText = `border:none; cursor:pointer; font-size: 10px;`;
+        fileLabel.className = "tree-file-label";
         fileLabel.addEventListener("mousedown", (e) => {
           e.preventDefault();
         });
