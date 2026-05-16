@@ -146,8 +146,11 @@
     .cell {
       width: 100%;
       min-height: 44px;
+      field-sizing: content;
       resize: none;
       overflow: hidden;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
       border: 0;
       border-right: 1px solid #d9dee8;
       border-bottom: 1px solid #d9dee8;
@@ -182,6 +185,9 @@
       <div class="title">Flow</div>
       <div class="toolbar-actions">
         <label>Speech Order: <input type="text" id="speechOrder" placeholder="1AC,1NC,2AR,2NR,2AR" style="width: 190px; padding: 4px 6px; border: 1px solid #c8d0dd; border-radius: 4px; font: inherit; font-size: 11px;"></label>
+        <button id="export-flow" type="button">Export</button>
+        <button id="import-flow" type="button">Import</button>
+        <input id="import-flow-file" type="file" accept="application/json,.json" hidden>
         <button id="clear-flows" type="button">Clear All</button>
         <button id="add-row" type="button">Add Row</button>
       </div>

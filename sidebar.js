@@ -131,6 +131,8 @@
         }
         else if (actionName === "Timer") {
           window.open("https://debatetimer.net/", "Debate Timer", "width=400,height=600");
+        } else if (actionName === "SpeechDrop") {
+          window.open(`https://speechdrop.net/${prompt("Speech drop code?")}`, "Speech Drop", "width=600,height=600");
         }
         else {
           await DebateTools.runAction(actionName);
@@ -193,11 +195,12 @@
         </select>
         </label>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
-        <button class="side-btn" data-action="ImportdocxToClipboard">⇩ Import to Clipboard</button>
         <button class="side-btn" data-action="Exportdocx">🗎 Export DOCX</button>
+        <button class="side-btn" data-action="ImportdocxToClipboard">⇩ Import to Clipboard</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" data-action="Readmode">🕮 Read Mode</button>
         <button class="side-btn" data-action="Timer">⏲ Timer</button>
+        <button class="side-btn" data-action="SpeechDrop">⏲ Speech Drop</button>
         <button class="side-btn" data-action="Email">✉ Email</button>
         <button id="flow-btn" class="side-btn" data-action="Flow">✎ Flow</button>
         <button id="flow-btn" class="side-btn" data-action="SendSelectionToFlow">Send To Flow</button>
@@ -212,6 +215,7 @@
         <button class="side-btn" id="SettingsBtn">⛯ Settings</button>
         <a class="side-btn" href="https://www.example.com" style="color:navy;">ⓘ Help</a>
         </div>
+        <br>
         <div id="folder-tree-host"></div>
       </div>
       <div id="settings" style="display:none;">

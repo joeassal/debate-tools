@@ -80,7 +80,8 @@
       DebateTools.clickDocButton("clearFormattingButton");
       DebateTools.clickDocButton("fontSizeIncrement");
       DebateTools.clickDocButton("fontSizeIncrement");
-      DebateTools.clickDocButton("boldButton");
+      const bbtn=document.getElementById("boldButton")
+      if(bbtn.ariaPressed != "true") DebateTools.clickElement(bbtn);
     },
     Underline: () => DebateTools.clickDocButton("underlineButton"),
     Highlight: async () => await DebateTools.highlight(),

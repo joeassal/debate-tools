@@ -582,9 +582,9 @@
   }
 
   DebateTools.ExtrapolateToFlow = async () => {
-    chrome.runtime.sendMessage({ action: "openSidePanel" });
     await DebateTools.clickDocsMenuShortcut("Ctrl+A")
     const container = await DebateTools.getSelection(true)
+    chrome.runtime.sendMessage({ action: "openSidePanel" });
 
     let cells=[]
     const pgs = container.querySelector("b")
@@ -597,11 +597,13 @@
         cells.push("--" + replaceFiller(pg.innerText) + "--")
       } else  {
         let kc = ""
+        let hasHighlight=false;
         pg.querySelectorAll("span").forEach(span => {
-          if(pg.tagName==="OL") {
+          if(span.style.backgroundColor!=="transparent") hasHighlight=true;
+          if(pg.tagName==="OL" && !hasHighlight &&  parseInt(span.style.fontSize)>=12) {
             cells.push(replaceFiller(span.innerText))
             cells.push("")
-          } else if(span.style.fontWeight>400 && parseInt(span.style.fontSize)>=13 && span.style.backgroundColor==="transparent") {
+          } else if(span.style.fontWeight>400 && !hasHighlight && (parseInt(span.style.fontSize)>=13 || span.innerText.includes("https") || span.innerText.includes("www."))) {
             kc += span.innerText
           }
         })
@@ -615,7 +617,9 @@
       action: "toFlow",
       message: {
         cells: cells,
-        action: "extrapolate"
+        action: "extrapolate",
+        name: prompt("Flow Name?"),
+        speech: prompt("Speech to flow in? (e.g 1AC,1NC,1AR)")
       }
     })
   }
