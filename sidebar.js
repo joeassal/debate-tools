@@ -181,20 +181,18 @@
         <button class="side-btn" data-action="Cite">Cite (${DebateTools.getSetting("Cite")})</button>
         <button class="side-btn" data-action="Underline">Underline (${DebateTools.getSetting("Underline")})</button>
         <button class="side-btn" data-action="Emphasis">Emphasis (${DebateTools.getSetting("Emphasis")})</button>
-        <button class="side-btn" data-action="Highlight">Highlight (${DebateTools.getSetting("Highlight")})</button>
+        <button class="side-btn" data-action="Highlight">Highlight (${DebateTools.getSetting("Highlight")}) 
+          <select id="highlight-color-select" name="HighlightColor" class="sidebar-select">
+          <option  yellow;" value="yellow">🟨</option>
+          <option  lime;" value="lime">🟩</option>
+          <option cyan;" value="cyan">🟦</option>
+          <option  value="magenta">🟪</option>
+          <option value="red">🟥️</option>
+          </select>
+        </button>
         <button class="side-btn" data-action="Clear">Clear (${DebateTools.getSetting("Clear")})</button>
         <button class="side-btn" data-action="Shrink">⛶ Shrink</button>
         <button class="side-btn" data-action="StandardizeHighlights">🖍 Standardize Highlights</button>
-        <label class="select-row highlight-select-row" data-action="Highlight">
-        <span>Highlight Color</span>
-        <select id="highlight-color-select" name="HighlightColor" class="sidebar-select">
-        <option  yellow;" value="yellow">🟨</option>
-        <option  lime;" value="lime">🟩</option>
-        <option cyan;" value="cyan">🟦</option>
-        <option  value="magenta">🟪</option>
-        <option value="red">🟥️</option>
-        </select>
-        </label>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" data-action="Exportdocx">🗎 Export DOCX</button>
         <button class="side-btn" data-action="ImportdocxToClipboard">⇩ Import to Clipboard</button>
@@ -204,7 +202,7 @@
         <button class="side-btn" data-action="SpeechDrop">⏲ Speech Drop</button>
         <button class="side-btn" data-action="Email">✉ Email</button>
         <div class="action-menu">
-          <button class="side-btn action-menu-main" data-action="Flow">Flow 🖉</button>
+          <button class="side-btn action-menu-main" data-action="Flow">Flow</button>
           <details class="action-menu-dropdown">
             <summary title="Flow options">More</summary>
             <div class="action-menu-list">
@@ -257,6 +255,7 @@
             <option value="Arial">Arial</option>
             <option value="Times New Roman">Times New Roman</option>
             </select></label>
+            <label class="settings-row">Normal text font size<input name="ntextSize"></label>
             <label class="settings-row">Pocket font size<input name="h1Size"></label>
             <label class="settings-row">Hat font size<input name="h2Size"></label>
             <label class="settings-row">Block font size<input name="h3Size"></label>
@@ -273,6 +272,9 @@
         </details>
         <details class="settings-detail"><summary><span>Virtual Tub</span></summary>
             <label class="settings-row">Show Virtual Tub?<input type="checkbox" name="showFolderTree"></label>
+                highlightColorSelect.addEventListener("change", (e) => {
+                  e.stopPropagation();
+                
             <label class="settings-row">Ask to confirm when rewriting?<input type="checkbox" name="confirmOnRewrite"></label>
         </details>
         <details class="settings-detail" id="Caselist"><summary><span>Caselist Info</span></summary>
@@ -589,8 +591,16 @@
     })
     document.getElementById("settings-setstyle").addEventListener("click", async ()=> await DebateTools.formatHeaderStyles())
 
-    document.getElementById("highlight-color-select").value = DebateTools.getSetting("highlightColor");
-    document.getElementById("highlight-color-select").addEventListener("change", (e) => changeSetting("highlightColor", e.target.value));
+    const highlightColorSelect = document.getElementById("highlight-color-select");
+    highlightColorSelect.value = DebateTools.getSetting("highlightColor");
+    ["pointerdown", "mousedown", "mouseup", "click"].forEach((eventName) => {
+      highlightColorSelect.addEventListener(eventName, (e) => e.stopPropagation());
+    });
+    highlightColorSelect.addEventListener("change", (e) => {
+      e.stopPropagation();
+      changeSetting("highlightColor", e.target.value);
+    });
+
     document.getElementById("userFormat").value = DebateTools.getSetting("userFormat");
     document.getElementById("userFormat").addEventListener("change", (e) => changeSetting("userFormat", e.target.value));
     document.getElementById("font").value = DebateTools.getSetting("formatFont");

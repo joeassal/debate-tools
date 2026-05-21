@@ -87,17 +87,19 @@
         }
         .exportbtns {
           position: absolute;
+          left: 8px;
           right: 8px;
           bottom: 8px;
           display: flex;
           gap: 4px;
           align-items: center;
           z-index: 1;
-          max-width: calc(100% - 16px);
+          width: auto;
         }
         #searchBar {
           box-sizing: border-box;
-          width: min(100px, 34vw);
+          flex: 1 1 auto;
+          min-width: 0;
           min-height: 22px;
           border: 1px solid #cfd6e4;
           border-radius: 4px;

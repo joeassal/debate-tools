@@ -137,19 +137,19 @@
     const h2 = `<span id=""><span style="text-align: center; font-size: ${DebateTools.getSetting("h2Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 2 (hat)</span></span><br>`
     const h3 = `<span id=""><span style="text-align: center; font-size: ${DebateTools.getSetting("h3Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 3 (block)</span></span><br>`
     const h4 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h4Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Heading 4 (tag)</span></span><br>`
-    //const nt = `<span id=""><span style="font-size: ${DebateTools.getSetting("ntextSize")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"></span></span><br>`
-    const styles=[h1,h2,h3,h4/*,nt*/]
+    const nt = `<span id=""><span style="font-size: ${DebateTools.getSetting("ntextSize")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">test</span></span><br>`
+    const styles=[h1,h2,h3,h4,nt]
     await DebateTools.clickDocsMenuShortcut("Shift+F11")
 
     for (let i=styles.length-1;i>=0;i--) {
       let style=styles[i];
-      // if(i==4) {
-      //   await DebateTools.pasteHTML(style)
-      //   await DebateTools.clickDocsMenuShortcut("Ctrl+A")
-      //   await DebateTools.clickHeader("Update 'Normal text' to match u")
-      //   await DebateTools.clickDocsMenuShortcut("Ctrl+A")
-      //   continue;
-      // }
+      if(i==4) {
+        await DebateTools.pasteHTML(style)
+        await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+        await DebateTools.clickHeader("Update 'Normal text' to match u")
+        await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+        continue;
+      }
       if(i<3) await DebateTools.clickDocButton('alignCenterButton')
       await DebateTools.pasteHTML(style)
       await DebateTools.clickDocsMenuShortcut("Ctrl+A")
