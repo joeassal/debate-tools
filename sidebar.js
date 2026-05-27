@@ -15,7 +15,7 @@
           body {
             width: 900px;
             margin: 20px auto;
-            font-family: Calibri, sans-serif;
+            font-family: Inter, sans-serif;
             overflow: hidden;
           }
           #page-container {
@@ -172,7 +172,7 @@
       border-left: 1px solid #cfd6e4;
       display: flex;
       flex-direction: column;
-      font-family: Calibri, sans-serif;
+      font-family: Inter, sans-serif;
       color: #172033;
       box-shadow: -6px 0 18px rgba(15, 23, 42, 0.14);
     `;
@@ -185,26 +185,26 @@
       <div class="sidebar-control-grid">
         <div class="sidebar-button-grid">
 
-        <button class="side-btn" data-action="Paste">Paste (${DebateTools.getSetting("Paste")})</button>
-        <button class="side-btn" data-action="Condense">Condense (${DebateTools.getSetting("Condense")})</button>
-        <button class="side-btn" data-action="Pocket">Pocket (${DebateTools.getSetting("Pocket")})</button>
-        <button class="side-btn" data-action="Hat">Hat (${DebateTools.getSetting("Hat")})</button>
-        <button class="side-btn" data-action="Block">Block (${DebateTools.getSetting("Block")})</button>
-        <button class="side-btn" data-action="Tag">Tag (${DebateTools.getSetting("Tag")})</button>
-        <button class="side-btn" data-action="Cite">Cite (${DebateTools.getSetting("Cite")})</button>
-        <button class="side-btn" data-action="Underline">Underline (${DebateTools.getSetting("Underline")})</button>
-        <button class="side-btn" data-action="Emphasis">Emphasis (${DebateTools.getSetting("Emphasis")})</button>
-        <button class="side-btn" data-action="Highlight">Highlight (${DebateTools.getSetting("Highlight")}) 
+        <button class="side-btn" data-action="Paste"><span class="side-btn-label">Paste</span><span class="side-btn-keybind">${DebateTools.getSetting("Paste")}</span></button>
+        <button class="side-btn" data-action="Condense"><span class="side-btn-label">Condense</span><span class="side-btn-keybind">${DebateTools.getSetting("Condense")}</span></button>
+        <button class="side-btn" data-action="Pocket"><span class="side-btn-label">Pocket</span><span class="side-btn-keybind">${DebateTools.getSetting("Pocket")}</span></button>
+        <button class="side-btn" data-action="Hat"><span class="side-btn-label">Hat</span><span class="side-btn-keybind">${DebateTools.getSetting("Hat")}</span></button>
+        <button class="side-btn" data-action="Block"><span class="side-btn-label">Block</span><span class="side-btn-keybind">${DebateTools.getSetting("Block")}</span></button>
+        <button class="side-btn" data-action="Tag"><span class="side-btn-label">Tag</span><span class="side-btn-keybind">${DebateTools.getSetting("Tag")}</span></button>
+        <button class="side-btn" data-action="Cite"><span class="side-btn-label">Cite</span><span class="side-btn-keybind">${DebateTools.getSetting("Cite")}</span></button>
+        <button class="side-btn" data-action="Underline"><span class="side-btn-label">Underline</span><span class="side-btn-keybind">${DebateTools.getSetting("Underline")}</span></button>
+        <button class="side-btn" data-action="Emphasis"><span class="side-btn-label">Emphasis</span><span class="side-btn-keybind">${DebateTools.getSetting("Emphasis")}</span></button>
+        <button class="side-btn" data-action="Highlight"><span class="side-btn-label">Highlight</span><span class="side-btn-keybind">${DebateTools.getSetting("Highlight")}</span>
           <select id="highlight-color-select" name="HighlightColor" class="sidebar-select">
-          <option  yellow;" value="yellow">🟨</option>
-          <option  lime;" value="lime">🟩</option>
-          <option cyan;" value="cyan">🟦</option>
+          <option  value="yellow">🟨</option>
+          <option  value="lime">🟩</option>
+          <option  value="cyan">🟦</option>
           <option  value="magenta">🟪</option>
           <option value="red">🟥️</option>
           </select>
         </button>
-        <button class="side-btn" data-action="Clear">Clear (${DebateTools.getSetting("Clear")})</button>
-        <button class="side-btn" data-action="Shrink">⛶ Shrink</button>
+        <button class="side-btn" data-action="Clear"><span class="side-btn-label">Clear</span><span class="side-btn-keybind">${DebateTools.getSetting("Clear")}</span></button>
+        <button class="side-btn" data-action="Shrink">Shrink</button>
         <details class="more-features-dropdown">
           <summary class="side-btn" title="More feature options">Doc</summary>
           <div class="action-menu-list action-menu-list-wide ">
@@ -218,12 +218,12 @@
           </div>
         </details>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
-        <button class="side-btn" data-action="Exportdocx">🗎 Export DOCX</button>
-        <button class="side-btn" data-action="ImportdocxToClipboard">⇩ Import to Clipboard</button>
-        <button class="side-btn" data-action="Readmode">🕮 Read Mode</button>
+        <button class="side-btn" data-action="Exportdocx">Export DOCX</button>
+        <button class="side-btn" data-action="ImportdocxToClipboard">Clipboard Import</button>
+        <button class="side-btn" data-action="SpeechDrop">Speech Drop</button>
         <button class="side-btn" data-action="Timer">⏲ Timer</button>
-        <button class="side-btn" data-action="SpeechDrop">⏲ Speech Drop</button>
         <button class="side-btn" data-action="Email">✉ Email</button>
+        <button class="side-btn" data-action="Readmode">🕮 Read Mode</button>
         <button class="side-btn" data-action="Wikify">❝❞ Wikify</button>
         <button class="side-btn" data-action="OpenCaseList">🗀 Caselist</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
@@ -273,9 +273,9 @@
         </details>
         <details class="settings-detail" id="formatStyles"><summary><span>Styles</span> <button id="settings-setstyle">Set Styles</button></summary>
             <label class="settings-row">Font<select id="font" name="formatFont">
-            <option value="Calibri">Calibri</option>
-            <option value="Arial">Arial</option>
+            <option value="Arial, sans-serif">Arial</option>
             <option value="Times New Roman">Times New Roman</option>
+            <option value="Calibri">Calibri</option>
             </select></label>
             <label class="settings-row">Normal text font size<input name="ntextSize"></label>
             <label class="settings-row">Pocket font size<input name="h1Size"></label>
@@ -313,13 +313,14 @@
       </div>
       <style>
         .side-btn {
+          position: relative;
           flex: 0 0 auto;
           display: flex;
           align-items: center;
           box-sizing: border-box;
           width: 100%;
           min-height: 28px;
-          padding: 5px 7px;
+          padding: 10px 7px 5px 7px;
           cursor: pointer;
           border: 1px solid #cfd6e4;
           border-radius: 4px;
@@ -332,6 +333,31 @@
           overflow: hidden;
           text-overflow: ellipsis;
           transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+        }
+        .side-btn-label {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .side-btn-keybind {
+          position: absolute;
+          top: 2px;
+          right: 5px;
+          color: #7a8494;
+          font-size: 9px;
+          font-weight: 400;
+          line-height: 1;
+          pointer-events: none;
+        }
+        .side-btn[data-action="Highlight"] {
+          gap: 6px;
+        }
+        .side-btn[data-action="Highlight"] .side-btn-label {
+          flex: 1;
+        }
+        .side-btn[data-action="Highlight"] .sidebar-select {
+          margin-left: auto;
         }
         .side-btn:hover {
           background: #eef2ff;
@@ -503,15 +529,16 @@
           background-color: #f8fafc;
           color: #172033;
           cursor: pointer;
-          font-family: Calibri, sans-serif;
+          font-family: Inter, sans-serif;
           font-size: 12px;
           outline: none;
           transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
         }
         #highlight-color-select {
-          width: auto;
-          min-width: 0;
-          padding: 2px 4px;
+          width: 22px;
+          min-width: 22px;
+          min-height: 20px;
+          padding: 0 1px;
           appearance: none;
           -webkit-appearance: none;
           -moz-appearance: none;
@@ -613,7 +640,8 @@
     }
     
     document.getElementById("SettingsBtn").addEventListener("click", () => {
-      document.getElementById("settings").style.display = "block";
+      const settings = document.getElementById("settings");
+      settings.style.display = settings.style.display === "block" ? "none" : "block";
     });
     document.getElementById("settings-close").addEventListener("click", () => {
       document.getElementById("settings").style.display = "none";
@@ -696,7 +724,15 @@
     }
     function syncActionButton(action, value) {
       const button = sidebar.querySelector(`.side-btn[data-action="${action}"]`);
-      if (button) button.textContent = `${action} (${value})`;
+      if (!button) return;
+
+      let keybind = button.querySelector(".side-btn-keybind");
+      if (!keybind) {
+        keybind = document.createElement("span");
+        keybind.className = "side-btn-keybind";
+        button.appendChild(keybind);
+      }
+      keybind.textContent = value;
     }
     // end keybind logic
 

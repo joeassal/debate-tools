@@ -147,6 +147,7 @@
         await DebateTools.pasteHTML(style)
         await DebateTools.clickDocsMenuShortcut("Ctrl+A")
         await DebateTools.clickHeader("Update 'Normal text' to match u")
+        await DebateTools.clickHeader("Update 'Normal text' to match u")
         await DebateTools.clickDocsMenuShortcut("Ctrl+A")
         continue;
       }
