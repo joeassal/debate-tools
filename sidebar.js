@@ -185,17 +185,17 @@
       <div class="sidebar-control-grid">
         <div class="sidebar-button-grid">
 
-        <button class="side-btn" data-action="Paste"><span class="side-btn-label">Paste</span><span class="side-btn-keybind">${DebateTools.getSetting("Paste")}</span></button>
-        <button class="side-btn" data-action="Condense"><span class="side-btn-label">Condense</span><span class="side-btn-keybind">${DebateTools.getSetting("Condense")}</span></button>
-        <button class="side-btn" data-action="Pocket"><span class="side-btn-label">Pocket</span><span class="side-btn-keybind">${DebateTools.getSetting("Pocket")}</span></button>
-        <button class="side-btn" data-action="Hat"><span class="side-btn-label">Hat</span><span class="side-btn-keybind">${DebateTools.getSetting("Hat")}</span></button>
-        <button class="side-btn" data-action="Block"><span class="side-btn-label">Block</span><span class="side-btn-keybind">${DebateTools.getSetting("Block")}</span></button>
-        <button class="side-btn" data-action="Tag"><span class="side-btn-label">Tag</span><span class="side-btn-keybind">${DebateTools.getSetting("Tag")}</span></button>
-        <button class="side-btn" data-action="Cite"><span class="side-btn-label">Cite</span><span class="side-btn-keybind">${DebateTools.getSetting("Cite")}</span></button>
-        <button class="side-btn" data-action="Underline"><span class="side-btn-label">Underline</span><span class="side-btn-keybind">${DebateTools.getSetting("Underline")}</span></button>
-        <button class="side-btn" data-action="Emphasis"><span class="side-btn-label">Emphasis</span><span class="side-btn-keybind">${DebateTools.getSetting("Emphasis")}</span></button>
-        <button class="side-btn" data-action="Highlight"><span class="side-btn-label">Highlight</span><span class="side-btn-keybind">${DebateTools.getSetting("Highlight")}</span>
-          <select id="highlight-color-select" name="HighlightColor" class="sidebar-select">
+        <button class="side-btn" data-action="Paste" title="Paste clipboard contents without formatting"><span class="side-btn-label">Paste</span><span class="side-btn-keybind">${DebateTools.getSetting("Paste")}</span></button>
+        <button class="side-btn" data-action="Condense" title="Condense selected text into a tighter card paragraph, removing breaks and whitespace"><span class="side-btn-label">Condense</span><span class="side-btn-keybind">${DebateTools.getSetting("Condense")}</span></button>
+        <button class="side-btn" data-action="Pocket" title="Format selected text as a pocket heading"><span class="side-btn-label">Pocket</span><span class="side-btn-keybind">${DebateTools.getSetting("Pocket")}</span></button>
+        <button class="side-btn" data-action="Hat" title="Format selected text as a hat heading"><span class="side-btn-label">Hat</span><span class="side-btn-keybind">${DebateTools.getSetting("Hat")}</span></button>
+        <button class="side-btn" data-action="Block" title="Format selected text as a block heading"><span class="side-btn-label">Block</span><span class="side-btn-keybind">${DebateTools.getSetting("Block")}</span></button>
+        <button class="side-btn" data-action="Tag" title="Format selected text as a tag heading"><span class="side-btn-label">Tag</span><span class="side-btn-keybind">${DebateTools.getSetting("Tag")}</span></button>
+        <button class="side-btn" data-action="Cite" title="Format selected text as citation text"><span class="side-btn-label">Cite</span><span class="side-btn-keybind">${DebateTools.getSetting("Cite")}</span></button>
+        <button class="side-btn" data-action="Underline" title="Toggle underline on the selected text"><span class="side-btn-label">Underline</span><span class="side-btn-keybind">${DebateTools.getSetting("Underline")}</span></button>
+        <button class="side-btn" data-action="Emphasis" title="Toggle bold and underline emphasis on the selected text"><span class="side-btn-label">Emphasis</span><span class="side-btn-keybind">${DebateTools.getSetting("Emphasis")}</span></button>
+        <button class="side-btn" data-action="Highlight" title="Highlight selected text using the chosen color"><span class="side-btn-label">Highlight</span><span class="side-btn-keybind">${DebateTools.getSetting("Highlight")}</span>
+          <select id="highlight-color-select" name="HighlightColor" class="sidebar-select" title="Choose highlight color">
           <option  value="yellow">🟨</option>
           <option  value="lime">🟩</option>
           <option  value="cyan">🟦</option>
@@ -203,36 +203,36 @@
           <option value="red">🟥️</option>
           </select>
         </button>
-        <button class="side-btn" data-action="Clear"><span class="side-btn-label">Clear</span><span class="side-btn-keybind">${DebateTools.getSetting("Clear")}</span></button>
-        <button class="side-btn" data-action="Shrink">Shrink</button>
+        <button class="side-btn" data-action="Clear" title="Clear formatting from the selected text"><span class="side-btn-label">Clear</span><span class="side-btn-keybind">${DebateTools.getSetting("Clear")}</span></button>
+        <button class="side-btn" data-action="Shrink" title="Reduce non underlined text size, cycling back when it gets too small">Shrink</button>
         <details class="more-features-dropdown">
-          <summary class="side-btn" title="More feature options">Doc v</summary>
+          <summary class="side-btn" title="Document cleanup and formatting tools">Doc v</summary>
           <div class="action-menu-list action-menu-list-wide ">
-          <button class="side-btn" data-action="StandardizeHighlights">🖍 Standardize Highlights</button>
-            <button class="side-btn" data-action="ConvertStyles">Convert to default styles</button>
-            <button class="side-btn" data-action="NumberHeaders">Auto Number Headers</button>
-            <button class="side-btn" data-action="DeNumberHeaders">De-Number Headers</button>
-            <button class="side-btn" data-action="CutBlankTags">Remove Blank Tags</button>
-            <button class="side-btn" data-action="CutHyperLinks">Remove Hyper Links</button>
+          <button class="side-btn" data-action="StandardizeHighlights" title="Change all highlights in the document to the chosen color">🖍 Standardize Highlights</button>
+            <button class="side-btn" data-action="ConvertStyles" title="Convert document headings to your saved default styles">Convert to default styles</button>
+            <button class="side-btn" data-action="NumberHeaders" title="Automatically number document headers">Auto Number Headers</button>
+            <button class="side-btn" data-action="DeNumberHeaders" title="Remove automatic numbering from document headers">De-Number Headers</button>
+            <button class="side-btn" data-action="CutBlankTags" title="Remove empty tag headings from the document">Remove Blank Tags</button>
+            <button class="side-btn" data-action="CutHyperLinks" title="Remove hyperlinks from the document">Remove Hyper Links</button>
           </div>
         </details>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
-        <button class="side-btn" data-action="Exportdocx">Export DOCX</button>
-        <button class="side-btn" data-action="ImportdocxToClipboard">Clipboard Import</button>
-        <button class="side-btn" data-action="SpeechDrop">Speech Drop</button>
-        <button class="side-btn" data-action="Timer">⏲ Timer</button>
-        <button class="side-btn" data-action="Email">✉ Email</button>
-        <button class="side-btn" data-action="Readmode">🕮 Read Mode</button>
-        <button class="side-btn" data-action="Wikify">❝❞ Wikify</button>
-        <button class="side-btn" data-action="OpenCaseList">🗀 Caselist</button>
+        <button class="side-btn" data-action="Exportdocx" title="Download the current Google Doc as a DOCX file">Export DOCX</button>
+        <button class="side-btn" data-action="ImportdocxToClipboard" title="Import a DOCX file and copy its contents to the clipboard">Clipboard Import</button>
+        <button class="side-btn" data-action="SpeechDrop" title="Open SpeechDrop using a code you enter">Speech Drop</button>
+        <button class="side-btn" data-action="Timer" title="Open a debate timer in a small window">⏲ Timer</button>
+        <button class="side-btn" data-action="Email" title="Open Google Docs email options for this file">✉ Email</button>
+        <button class="side-btn" data-action="Readmode" title="Open a clean reading window for the current document">🕮 Read Mode</button>
+        <button class="side-btn" data-action="Wikify" title="Convert selected cards into wiki-ready text and copy it">❝❞ Wikify</button>
+        <button class="side-btn" data-action="OpenCaseList" title="Open the configured OpenCaselist upload page">🗀 Caselist</button>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <div class="action-menu">
-          <button class="side-btn action-menu-main" data-action="Flow">Flow</button>
+          <button class="side-btn action-menu-main" data-action="Flow" title="Open the flow panel">Flow</button>
           <details class="action-menu-dropdown">
             <summary title="Flow options">More</summary>
             <div class="action-menu-list">
-              <button class="side-btn" data-action="SendSelectionToFlow">Send to Flow</button>
-              <button class="side-btn" data-action="ExtrapolateFlow">Flow Doc</button>
+              <button class="side-btn" data-action="SendSelectionToFlow" title="Send the selected text to the flow panel">Send to Flow</button>
+              <button class="side-btn" data-action="ExtrapolateFlow" title="Build a flow from the current document">Flow Doc</button>
             </div>
           </details>
         </div>
@@ -246,8 +246,8 @@
             </div>
           </details>
         </div>
-        <button class="side-btn" id="SettingsBtn">⛯ Settings</button>
-        <a class="side-btn" href="https://www.example.com">ⓘ Help</a>
+        <button class="side-btn" id="SettingsBtn" title="Open or close CardFlow settings">⛯ Settings</button>
+        <a class="side-btn" href="https://www.example.com" title="Open CardFlow help">ⓘ Help</a>
         </div>
         <br>
         <div id="folder-tree-host"></div>
@@ -255,9 +255,9 @@
       <div id="settings" style="display:none;">
       <div class="settings-header">
         <b>Settings</b>
-        <button id="settings-close" type="button">X</button>
+        <button id="settings-close" type="button" title="Close settings">X</button>
       </div>
-        <details class="settings-detail" id="keybindsFormat"><summary><span>Formatting Keybinds</span><button id="settings-default" type="button">Reset Default</button></summary>
+        <details class="settings-detail" id="keybindsFormat"><summary><span>Formatting Keybinds</span><button id="settings-default" type="button" title="Restore the default formatting keybinds">Reset Default</button></summary>
             <label class="settings-row">Paste<select name="Paste"><option value="Not Selected">Not Selected</option></select></label>
             <label class="settings-row">Condense<select name="Condense"><option value="Not Selected">Not Selected</option></select></label>
             <label class="settings-row">Pocket<select name="Pocket"><option value="Not Selected">Not Selected</option></select></label>
@@ -270,7 +270,7 @@
             <label class="settings-row">Highlight<select name="Highlight"><option value="Not Selected">Not Selected</option></select></label>
             <label class="settings-row">Clear<select name="Clear"><option value="Not Selected">Not Selected</option></select></label>
         </details>
-        <details class="settings-detail" id="formatStyles"><summary><span>Styles</span> <button id="settings-setstyle">Set Styles</button></summary>
+        <details class="settings-detail" id="formatStyles"><summary><span>Styles</span> <button id="settings-setstyle" title="Save the current style settings into Google Docs">Set Styles</button></summary>
             <label class="settings-row">Font<select id="font" name="formatFont">
             <option value="Arial">Arial</option>
             <option value="Times New Roman">Times New Roman</option>
