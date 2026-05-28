@@ -106,6 +106,7 @@
     Flow: async () => await chrome.runtime.sendMessage({ action: "openSidePanel" }),
     SendSelectionToFlow: async () => await DebateTools.sendToFlow(),
     ExtrapolateFlow: async () => await DebateTools.ExtrapolateToFlow(),
+    ConvertStyles: async () => await DebateTools.clickHeader("Use my default styles u"),
   };
 
   //init keybinds

@@ -206,13 +206,13 @@
         <button class="side-btn" data-action="Clear"><span class="side-btn-label">Clear</span><span class="side-btn-keybind">${DebateTools.getSetting("Clear")}</span></button>
         <button class="side-btn" data-action="Shrink">Shrink</button>
         <details class="more-features-dropdown">
-          <summary class="side-btn" title="More feature options">Doc</summary>
+          <summary class="side-btn" title="More feature options">Doc v</summary>
           <div class="action-menu-list action-menu-list-wide ">
-            <button class="side-btn" data-action="StandardizeHighlights">🖍 Standardize Highlights</button>
+            <button class="side-btn" data-action="ConvertStyles">Convert to default styles</button>
           </div>
         </details>
         <details class="more-features-dropdown">
-          <summary class="side-btn" title="More feature options">Card</summary>
+          <summary class="side-btn" title="More feature options">Card v</summary>
           <div class="action-menu-list action-menu-list-wide ">
             <button class="side-btn" data-action="StandardizeHighlights">🖍 Standardize Highlights</button>
           </div>
@@ -273,7 +273,7 @@
         </details>
         <details class="settings-detail" id="formatStyles"><summary><span>Styles</span> <button id="settings-setstyle">Set Styles</button></summary>
             <label class="settings-row">Font<select id="font" name="formatFont">
-            <option value="Arial, sans-serif">Arial</option>
+            <option value="Arial">Arial</option>
             <option value="Times New Roman">Times New Roman</option>
             <option value="Calibri">Calibri</option>
             </select></label>
@@ -294,9 +294,6 @@
         </details>
         <details class="settings-detail"><summary><span>Virtual Tub</span></summary>
             <label class="settings-row">Show Virtual Tub?<input type="checkbox" name="showFolderTree"></label>
-                highlightColorSelect.addEventListener("change", (e) => {
-                  e.stopPropagation();
-                
             <label class="settings-row">Ask to confirm when rewriting?<input type="checkbox" name="confirmOnRewrite"></label>
         </details>
         <details class="settings-detail" id="Caselist"><summary><span>Caselist Info</span></summary>
