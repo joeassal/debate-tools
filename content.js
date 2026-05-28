@@ -107,6 +107,10 @@
     SendSelectionToFlow: async () => await DebateTools.sendToFlow(),
     ExtrapolateFlow: async () => await DebateTools.ExtrapolateToFlow(),
     ConvertStyles: async () => await DebateTools.clickHeader("Use my default styles u"),
+    NumberHeaders: async () => await DebateTools.numberHeaders(),
+    DeNumberHeaders: async () => await DebateTools.deNumberHeaders(),
+    CutBlankTags: async () => await DebateTools.cutBlankTags(),
+    CutHyperLinks: async () => await DebateTools.cutHyperLinks(),
   };
 
   //init keybinds

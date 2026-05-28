@@ -208,13 +208,12 @@
         <details class="more-features-dropdown">
           <summary class="side-btn" title="More feature options">Doc v</summary>
           <div class="action-menu-list action-menu-list-wide ">
+          <button class="side-btn" data-action="StandardizeHighlights">🖍 Standardize Highlights</button>
             <button class="side-btn" data-action="ConvertStyles">Convert to default styles</button>
-          </div>
-        </details>
-        <details class="more-features-dropdown">
-          <summary class="side-btn" title="More feature options">Card v</summary>
-          <div class="action-menu-list action-menu-list-wide ">
-            <button class="side-btn" data-action="StandardizeHighlights">🖍 Standardize Highlights</button>
+            <button class="side-btn" data-action="NumberHeaders">Auto Number Headers</button>
+            <button class="side-btn" data-action="DeNumberHeaders">De-Number Headers</button>
+            <button class="side-btn" data-action="CutBlankTags">Remove Blank Tags</button>
+            <button class="side-btn" data-action="CutHyperLinks">Remove Hyper Links</button>
           </div>
         </details>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">

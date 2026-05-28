@@ -499,19 +499,7 @@
     navigator.clipboard.writeText(final);      
   };
 
-  DebateTools.standardizeHighlights = async () => {
-    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
-    return DebateTools.modifySelection(async (container) => {
-      container.querySelectorAll("*").forEach((span) => {
-        const bg = span.style.backgroundColor;
-        span.style.lineHeight/=1.2;
-        if (bg && bg !== "transparent") {
-          span.style.backgroundColor = DebateTools.getSetting("highlightColor");
-        }
-      });
-      return container.innerHTML.innerHTML;
-    });
-  }
+
 
   DebateTools.openCaselist = async () => {
     const parts=DebateTools.getSetting("userName").trim().split(" ")
@@ -625,6 +613,84 @@
         speech: prompt("Speech to flow in? (e.g 1AC,1NC,1AR)")
       }
     })
+  }
+
+  //extra tools
+  DebateTools.standardizeHighlights = async () => {
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+    return DebateTools.modifySelection(async (container) => {
+      container.querySelectorAll("*").forEach((span) => {
+        const bg = span.style.backgroundColor;
+        span.style.lineHeight/=1.2;
+        if (bg && bg !== "transparent") {
+          span.style.backgroundColor = DebateTools.getSetting("highlightColor");
+        }
+      });
+      return container.innerHTML;
+    });
+  }
+  DebateTools.numberHeaders = async () => {
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+    return DebateTools.modifySelection(async (container) => {
+      let k=1;
+      container.querySelectorAll("*").forEach((span) => {
+        span.style.lineHeight/=1.2;
+        if(span.tagName==="H4") {
+          span.innerHTML = `${k}. ${span.innerHTML}`;
+          k++;
+        }
+      });
+      return container.innerHTML;
+    });
+  }
+  DebateTools.deNumberHeaders = async () => {
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+    return DebateTools.modifySelection(async (container) => {
+      container.querySelectorAll("*").forEach((span) => {
+        span.style.lineHeight/=1.2;
+        if(span.tagName==="H4") {
+          let hText = span.innerText;
+          if(/^\d+\.\s/.test(hText)) {
+            span.innerHTML = span.innerHTML.replace(hText.slice(0, 3), "");
+          }
+        }
+      });
+      return container.innerHTML;
+    });
+  }
+  DebateTools.cutBlankTags = async () => {
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+    return DebateTools.modifySelection(async (container) => {
+      container.querySelectorAll("*").forEach((span) => {
+        span.style.lineHeight/=1.2;
+        if(span.tagName==="H4") {
+          if(H4.innerText.trim()==="") {
+            span.remove();
+          }
+        }
+      });
+      return container.innerHTML;
+    });
+  }
+  DebateTools.cutHyperLinks = async () => {
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+    return DebateTools.modifySelection(async (container) => {
+      container.querySelectorAll("*").forEach((span) => {
+        span.style.lineHeight/=1.2;
+        if(span.tagName==="A") {
+          span.style.textDecoration="none";
+          span.style.color="black";
+          span.style.backgroundColor="transparent";
+          span.querySelectorAll("*").forEach((child) => {
+            child.style.textDecoration="none";
+            child.style.color="black";
+            child.style.backgroundColor="transparent";
+          });
+          span.outerHTML = span.innerHTML;
+        }
+      });
+      return container.innerHTML;
+    });
   }
 
   global.DebateTools = DebateTools;
