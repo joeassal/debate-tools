@@ -247,7 +247,7 @@
           </details>
         </div>
         <button class="side-btn" id="SettingsBtn" title="Open or close CardFlow settings">⛯ Settings</button>
-        <a class="side-btn" href="https://github.com/joeassal/debate-tools/" title="Open CardFlow help">ⓘ Help</a>
+        <a class="side-btn" href="https://github.com/joeassal/debate-tools/"  target="_blank" title="Open CardFlow help">ⓘ Help</a>
         </div>
         <br>
         <div id="folder-tree-host"></div>
