@@ -206,7 +206,7 @@
         <button class="side-btn" data-action="Clear" title="Clear formatting from the selected text"><span class="side-btn-label">Clear</span><span class="side-btn-keybind">${DebateTools.getSetting("Clear")}</span></button>
         <button class="side-btn" data-action="Shrink" title="Reduce non underlined text size, cycling back when it gets too small">Shrink</button>
         <details class="more-features-dropdown">
-          <summary class="side-btn" title="Document cleanup and formatting tools">Doc v</summary>
+          <summary class="side-btn" title="Document cleanup and formatting tools">Doc Tools v</summary>
           <div class="action-menu-list action-menu-list-wide ">
           <button class="side-btn" data-action="StandardizeHighlights" title="Change all highlights in the document to the chosen color">🖍 Standardize Highlights</button>
             <button class="side-btn" data-action="ConvertStyles" title="Convert document headings to your saved default styles">Convert to default styles</button>
@@ -316,7 +316,7 @@
           box-sizing: border-box;
           width: 100%;
           min-height: 28px;
-          padding: 10px 7px 5px 7px;
+          padding: 5px 7px;
           cursor: pointer;
           border: 1px solid #cfd6e4;
           border-radius: 4px;
@@ -331,26 +331,26 @@
           transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
         }
         .side-btn-label {
+          flex: 1;
           min-width: 0;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
         .side-btn-keybind {
-          position: absolute;
-          top: 2px;
-          right: 5px;
+          flex: 0 0 auto;
+          margin-left: auto;
           color: #7a8494;
           font-size: 9px;
           font-weight: 400;
-          line-height: 1;
+          line-height: 1.2;
           pointer-events: none;
         }
         .side-btn[data-action="Highlight"] {
           gap: 6px;
         }
         .side-btn[data-action="Highlight"] .side-btn-label {
-          flex: 1;
+          flex: 0 1 auto;
         }
         .side-btn[data-action="Highlight"] .sidebar-select {
           margin-left: auto;
@@ -602,7 +602,7 @@
           justify-content: space-between;
           gap: 8px;
           margin-bottom: 8px;
-          cursor: pointer;
+          cursor: pointer;b nn 
           font-weight: bold;
         }
         #settings-default, #settings-setstyle {
