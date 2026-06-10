@@ -402,9 +402,14 @@
       const html = await docshift.toHtml(file);
       const blob = new Blob([html], { type: "text/html" });
       await navigator.clipboard.write([new ClipboardItem({ "text/html": blob })]);
-      await new Promise((resolve) => {
-        chrome.runtime.sendMessage({ action: "tabThenPaste" }, resolve);
-      });
+      if(DebateTools.getSetting("quickImportTab")) {
+        await DebateTools.clickDocsMenuShortcut("Shift+F11")
+        await DebateTools.clickDocsMenuShortcut("Ctrl+V")
+      } else {
+        await new Promise((resolve) => {
+          chrome.runtime.sendMessage({ action: "tabThenPaste" }, resolve);
+        });
+      }
     } catch (err) {
       console.log("Picker closed or failed", err);
     }
@@ -424,6 +429,13 @@
       const file = await fileHandle.getFile();
       const docshift = await DebateTools.ensureDocshiftLoaded();
       const html = await docshift.toHtml(file);
+      console.log(html)
+      // doc.querySelectorAll("h1, h2, h3").forEach((header) => {
+      //     if(header.tagName==="H1") 
+      //       header.outerHTML = `<span id=""><h1 style="text-align: center;border-left:solid #000000 3pt;border-right:solid #000000 3pt;border-top:solid #000000 3pt;border-bottom:solid #000000 3pt;margin-top:20pt;margin-bottom:6pt;padding:2pt 2pt 2pt 2pt;"><span style="font-size: ${DebateTools.getSetting("h1Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">${header.innerText}</span></h1><div><span style="font-size: 11pt; font-family: Calibri, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"><br></span></div></span>`
+      //     if(header.tagName==="H2" || header.tagName==="H3") 
+      //       header.outerHTML = `<span id=""><span style="text-align: center; font-size: ${DebateTools.getSetting("h"+ header.tagName.slice(1) +"Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">${header.innerText}</span></span><br>`
+      // })
       const blob = new Blob([html], { type: "text/html" });
       await navigator.clipboard.write([new ClipboardItem({ "text/html": blob })]);
     } catch (err) {

@@ -218,7 +218,7 @@
         </details>
         <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
         <button class="side-btn" data-action="Exportdocx" title="Download the current Google Doc as a DOCX file">Export DOCX</button>
-        <button class="side-btn" data-action="ImportdocxToClipboard" title="Import a DOCX file and copy its contents to the clipboard">Clipboard Import</button>
+        <button class="side-btn" data-action="Importdocx" title="Import a DOCX in a new tab (Not Perfect)">Quick Import</button>
         <button class="side-btn" data-action="SpeechDrop" title="Open SpeechDrop using a code you enter">Speech Drop</button>
         <button class="side-btn" data-action="Timer" title="Open a debate timer in a small window">⏲ Timer</button>
         <button class="side-btn" data-action="Email" title="Open Google Docs email options for this file">✉ Email</button>
@@ -247,7 +247,7 @@
           </details>
         </div>
         <button class="side-btn" id="SettingsBtn" title="Open or close CardFlow settings">⛯ Settings</button>
-        <a class="side-btn" href="https://www.example.com" title="Open CardFlow help">ⓘ Help</a>
+        <a class="side-btn" href="https://github.com/joeassal/debate-tools/" title="Open CardFlow help">ⓘ Help</a>
         </div>
         <br>
         <div id="folder-tree-host"></div>
@@ -285,6 +285,7 @@
         <details class="settings-detail" id="Features"><summary><span>Features</span></summary>
             <label class="settings-row">Cut Text in Read Mode?<input type="checkbox" name="cutTextReadMode"></label>
             <label class="settings-row">Use pilcrows on Condense?<input type="checkbox" name="usePilcrows"></label>
+            <label class="settings-row">Subtab when quick importing instead of new doc?<input type="checkbox" name="quickImportTab"></label>
             <label class="settings-row">New window when making speech doc?<input type="checkbox" name="speechDocNewWindow"></label>
             <label class="settings-row">Convert to normal text when clearing formatting?<input type="checkbox" name="normalTextOnClear"></label>
         </details>
@@ -315,8 +316,8 @@
           align-items: center;
           box-sizing: border-box;
           width: 100%;
-          min-height: 28px;
-          padding: 5px 7px;
+          min-height: 32px;
+          padding: 6px 7px;
           cursor: pointer;
           border: 1px solid #cfd6e4;
           border-radius: 4px;

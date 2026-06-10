@@ -5,6 +5,7 @@
     highlightColor: "yellow",
     cutTextReadMode: true,
     usePilcrows: true,
+    quickImportTab: false,
     speechDocNewWindow: true,
     showFolderTree: true,
     confirmOnRewrite: true,
