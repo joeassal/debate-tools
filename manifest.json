@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CardFlow - Debate Tools for Google Docs",
-    "description": "A set of tools to help competitive debaters use Google Docs more effectively, including all the featurs from other tools like Verbatim and paperless debate",
+    "description": "A set of tools to help competitive debaters use Google Docs more effectively, similar to Verbatim but for google docs",
     "version": "1.0",
     "host_permissions": [
         "https://docs.google.com/document/d/*",
@@ -12,10 +12,8 @@
     "clipboardWrite",
     "debugger",
     "tabs",
-    "activeTab",
     "scripting",
-    "sidePanel",
-    "storage"
+    "sidePanel"
     ],
     "background": {
         "service_worker": "background.js"
