@@ -309,6 +309,9 @@
             <label class="settings-row">School Name on Wiki<input name="userSchool"></label>
             <label class="settings-row">Full Name<input name="userName"></label>
         </details>
+        <details class="settings-detail" id="Caselist"><summary><span>Sidebar</span></summary>
+            <label class="settings-row">Sidebar Color Theme (refresh for changes)<input type="color" name="colorTheme"></label>
+        </details>
       </div>
       <style>
         .side-btn {
@@ -371,13 +374,13 @@
         #settings-default:focus-visible,
         #settings-setstyle:focus-visible {
           outline: none;
-          border-color: #2d3c80;
+          border-color: ${DebateTools.getSetting("colorTheme")};
           box-shadow: 0 0 0 2px rgba(45, 60, 128, 0.16);
         }
         .sidebar-header {
           min-height: 44px;
           padding: 10px 12px;
-          background: #2d3c80;
+          background: ${DebateTools.getSetting("colorTheme")};
           color: #ffffff;
           font-weight: bold;
           display: flex;
@@ -794,7 +797,7 @@
       bottom: 20px;
       right: 20px;
       padding: 10px 15px;
-      background: #2d3c80;
+      background: ${DebateTools.getSetting("colorTheme")};
       color: white;
       border: none;
       cursor: pointer;
