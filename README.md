@@ -4,7 +4,7 @@ Card flow is an open-source Google Chrome extension that implements a variety of
 ### Why CardFlow
 CardFlow is a 100% client side extension which has all the debate tools you need for evidentiary formats. Unlike the docs addon "Debate Template", it doesn't have to communicate between the server to take certain actions. It uses pure Javascript using the Manifest V3 extension platform, making it lightweight and fast compared to Google Apps Script addons. Offering additional features like OpenCaselist integration, Auto-Flowing, and quick emailing, CardFlow can do everything that other debate templates can do and more. 
 ## Installation
-CardFlow is really easy to install, just go to [link] and click "Add to Chrome"
+CardFlow is really easy to install, just go to https://chromewebstore.google.com/detail/cardflow-debate-tools-for/lgpodjkmdcobefkkfolipcgdmdkadhcp and click "Add to Chrome"
 
 You can also load the unpacked extension in developer mode by cloning this repository, going to chrome://extensions/, clicking "Load unpacked", and then selecting the manifest.json
 ## Usage
