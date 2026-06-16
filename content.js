@@ -209,7 +209,7 @@
 
   if(localStorage.getItem("userHasLoadedDebateTools") !== "true") {
     localStorage.setItem("userHasLoadedDebateTools", "true");
-    alert("Welcome to CardFlow V1.0! All settings can be configured in the settings tab of the extension, and if you have any issues, suggestions or questions email the developer or file at https://github.com/joeassal/debate-tools/issues. Enjoy!");
+    alert("Welcome to CardFlow V1.0! Click tools in the bottom right to get started. All settings can be configured in the settings tab of the extension, and if you have any issues, suggestions or questions email the developer or file at https://github.com/joeassal/debate-tools/issues. Enjoy!");
     DebateTools.formatHeaderStyles();
   }
 
