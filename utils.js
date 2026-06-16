@@ -236,9 +236,6 @@
 
     const modifiedHtml = await callback(container);
 
-    console.log(newCB)
-    console.log(modifiedHtml)
-
     const blob = new Blob([modifiedHtml ?? container.innerHTML], { type: "text/html" });
     await navigator.clipboard.write([new ClipboardItem({ "text/html": blob })]);
     await DebateTools.clickDocsMenuShortcut("Ctrl+V")
@@ -684,6 +681,23 @@
         span.style.lineHeight/=1.2;
         if(span.tagName==="H4") {
           if(H4.innerText.trim()==="") {
+            span.remove();
+          }
+        }
+      });
+      return container.innerHTML;
+    });
+  }
+  DebateTools.cutAnalytics = async () => {
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+    return DebateTools.modifySelection(async (container) => {
+      container.querySelectorAll("*").forEach((span) => {
+        span.style.lineHeight/=1.2;
+        if((span.style.color.includes("rgb(73, 73, 73)") || span.style.color.includes("#494949"))) {
+          if(DebateTools.getSetting("labelCutAnalytics")) {
+            span.innerHTML = "[analytic omitted]"
+          } else {
+            console.log('removing analytic:', span.innerText)
             span.remove();
           }
         }

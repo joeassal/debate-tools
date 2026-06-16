@@ -203,7 +203,7 @@
           <option value="red">🟥️</option>
           </select>
         </button>
-        <button class="side-btn" data-action="Clear" title="Clear formatting and/or convert to normal text"><span class="side-btn-label">Clear</span><span class="side-btn-keybind">${DebateTools.getSetting("Analytic")}</span></button>
+        <button class="side-btn" data-action="Clear" title="Clear formatting and/or convert to normal text"><span class="side-btn-label">Clear</span><span class="side-btn-keybind">${DebateTools.getSetting("Clear")}</span></button>
         <button class="side-btn" data-action="Shrink" title="Reduce non underlined text size, cycling back when it gets too small">Shrink</button>
         <details class="more-features-dropdown">
           <summary class="side-btn" title="Document cleanup and formatting tools">Doc Tools v</summary>
@@ -212,6 +212,7 @@
             <button class="side-btn" data-action="ConvertStyles" title="Convert document headings to your saved default styles">Convert to default styles</button>
             <button class="side-btn" data-action="NumberHeaders" title="Automatically number document headers">Auto Number Headers</button>
             <button class="side-btn" data-action="DeNumberHeaders" title="Remove automatic numbering from document headers">De-Number Headers</button>
+            <button class="side-btn" data-action="CutAnalytics" title="Remove analytics headings from the document">Remove Analytics</button>
             <button class="side-btn" data-action="CutBlankTags" title="Remove empty tag headings from the document">Remove Blank Tags</button>
             <button class="side-btn" data-action="CutHyperLinks" title="Remove hyperlinks from the document">Remove Hyper Links</button>
           </div>
@@ -283,11 +284,12 @@
             <label class="settings-row">Tag font size<input name="h4Size"></label>
         </details>
         <details class="settings-detail" id="Features"><summary><span>Features</span></summary>
-            <label class="settings-row">Cut Text in Read Mode?<input type="checkbox" name="cutTextReadMode"></label>
-            <label class="settings-row">Use pilcrows on Condense?<input type="checkbox" name="usePilcrows"></label>
-            <label class="settings-row">Subtab when quick importing instead of new doc?<input type="checkbox" name="quickImportTab"></label>
             <label class="settings-row">New window when making speech doc?<input type="checkbox" name="speechDocNewWindow"></label>
+            <label class="settings-row">Subtab when quick importing instead of new doc?<input type="checkbox" name="quickImportTab"></label>
+            <label class="settings-row">Cut Text in Read Mode?<input type="checkbox" name="cutTextReadMode"></label>
+            <label class="settings-row">Label analytics as omitted instead of completely deleting?<input type="checkbox" name="labelCutAnalytics"></label>
             <label class="settings-row">Convert to normal text when clearing formatting?<input type="checkbox" name="normalTextOnClear"></label>
+            <label class="settings-row">Use pilcrows on Condense?<input type="checkbox" name="usePilcrows"></label>
         </details>
         <details class="settings-detail"><summary><span>Flow</span></summary>
             <label class="settings-row">Shorthand when sending to flow<input type="text" name="fillerFlowWords" placeholder="topicality:T,links:LX"></label>

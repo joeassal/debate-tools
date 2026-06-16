@@ -10,6 +10,7 @@
     showFolderTree: true,
     confirmOnRewrite: true,
     normalTextOnClear: true,
+    labelCutAnalytics: true,
     userName: "",
     userSchool: "",
     userFormat: "hspolicy",
@@ -112,6 +113,7 @@
     NumberHeaders: async () => await DebateTools.numberHeaders(),
     DeNumberHeaders: async () => await DebateTools.deNumberHeaders(),
     CutBlankTags: async () => await DebateTools.cutBlankTags(),
+    CutAnalytics: async () => await DebateTools.cutAnalytics(),
     CutHyperLinks: async () => await DebateTools.cutHyperLinks(),
   };
 
@@ -119,7 +121,7 @@
   DebateTools.keybinds = {
     SendSpeechDoc: "`"
   };
-  DebateTools.bindableActions = ["Paste", "Condense", "Hat", "Block", "Tag", "Cite", "Underline", "Emphasis", "Highlight", "Analytic", "Clear"];
+  DebateTools.bindableActions = ["Paste", "Condense", "Hat", "Block", "Analytic", "Tag", "Cite", "Underline", "Emphasis", "Highlight", "Clear"];
   DebateTools.bindableActions.forEach(action => {
     DebateTools.keybinds[action] = DebateTools.getSetting(action) || "Not Selected";
   });
