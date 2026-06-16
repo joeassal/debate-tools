@@ -118,7 +118,7 @@
     const menuItems = document.querySelectorAll(headingMenuItemSelector);
 
     for (const item of menuItems) {
-      if(item.innerHTML.includes("Heading") || item.innerText.includes("Normal")) {
+      if(item.innerHTML.includes("Heading") || item.innerText.includes("Normal") || item.innerText.includes("Subtitle")) {
         DebateTools.hoverElement(item);
         await DebateTools.sleep(10);
       }
@@ -133,26 +133,32 @@
   };
   DebateTools.formatHeaderStyles = async () => {
     const startCB2 = await navigator.clipboard.read();
-    const h1 = `<span id=""><h1 style="text-align: center;border-left:solid #000000 3pt;border-right:solid #000000 3pt;border-top:solid #000000 3pt;border-bottom:solid #000000 3pt;margin-top:20pt;margin-bottom:6pt;padding:2pt 2pt 2pt 2pt;"><span style="font-size: ${DebateTools.getSetting("h1Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Done, you can delete this doc tab now</span></h1><div><span style="font-size: 11pt; font-family: Calibri, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"><br></span></div></span>`
+    const h1 = `<span id=""><h1 style="text-align: center;border-left:solid #000000 3pt;border-right:solid #000000 3pt;border-top:solid #000000 3pt;border-bottom:solid #000000 3pt;margin-top:20pt;margin-bottom:6pt;padding:2pt 2pt 2pt 2pt;"><span style="font-size: ${DebateTools.getSetting("h1Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">CardFlow style setup complete, you can delete this doc tab now</span></h1><div><span style="font-size: 11pt; font-family: Calibri, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;"><br></span></div></span>`
     const h2 = `<span id=""><span style="text-align: center; font-size: ${DebateTools.getSetting("h2Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 2 (hat)</span></span><br>`
     const h3 = `<span id=""><span style="text-align: center; font-size: ${DebateTools.getSetting("h3Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}, serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; text-decoration: underline; text-decoration-skip-ink: none; vertical-align: baseline; white-space: pre-wrap;">Heading 3 (block)</span></span><br>`
     const h4 = `<span id=""><span style="font-size: ${DebateTools.getSetting("h4Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(0, 0, 0); background-color: transparent; font-weight: 700; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Heading 4 (tag)</span></span><br>`
-    const nt = `<span id=""><span style="font-size: ${DebateTools.getSetting("ntextSize")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(0, 0, 0); background-color: transparent; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">test</span></span><br>`
-    const styles=[h1,h2,h3,h4,nt]
-    console.log(DebateTools.getSetting("formatFont"))
+    const nt = `<span id=""><span style="font-size: ${DebateTools.getSetting("ntextSize")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">test</span></span><br>`
+    const st = `<span id=""><span style="font-size: ${DebateTools.getSetting("h4Size")}pt; font-family: ${DebateTools.getSetting("formatFont")}; color: rgb(73, 73, 73); background-color: transparent; font-weight: 700; font-variant: normal; vertical-align: baseline; white-space: pre-wrap;">Subtitle (analytic)</span></span><br>`
+    const styles=[h1,h2,h3,h4]
     await DebateTools.clickDocsMenuShortcut("Shift+F11")
-    for (let i=4;i>=0;i--) {
+    
+    //update normal text first to set font for shortcut menu
+    await DebateTools.pasteHTML(nt)
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+    if(DebateTools.getSetting("formatFont")==="Arial") {
+      DebateTools.clickElement(document.querySelector("span[style='font-family: Arial;']").parentElement.parentElement)
+    }
+    await DebateTools.clickHeader("Update 'Normal text' to match u")
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+
+    //then do subtitle
+    await DebateTools.pasteHTML(st)
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+    await DebateTools.clickHeader("Update 'Subtitle' to match u")
+    await DebateTools.clickDocsMenuShortcut("Ctrl+A") 
+
+    for (let i=3;i>=0;i--) {
       let style=styles[i];
-      if(i>=4) {
-        await DebateTools.pasteHTML(style)
-        await DebateTools.clickDocsMenuShortcut("Ctrl+A")
-        if(DebateTools.getSetting("formatFont")==="Arial") {
-          DebateTools.clickElement(document.querySelector("span[style='font-family: Arial;']").parentElement.parentElement)
-        }
-        await DebateTools.clickHeader("Update 'Normal text' to match u")
-        await DebateTools.clickDocsMenuShortcut("Ctrl+A")
-        continue;
-      }
       if(i<3) await DebateTools.clickDocButton('alignCenterButton')
       await DebateTools.pasteHTML(style)
       await DebateTools.clickDocsMenuShortcut("Ctrl+A")
@@ -229,9 +235,12 @@
     container.innerHTML = newCB;
 
     const modifiedHtml = await callback(container);
+
+    console.log(newCB)
+    console.log(modifiedHtml)
+
     const blob = new Blob([modifiedHtml ?? container.innerHTML], { type: "text/html" });
     await navigator.clipboard.write([new ClipboardItem({ "text/html": blob })]);
-
     await DebateTools.clickDocsMenuShortcut("Ctrl+V")
     
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -261,12 +270,10 @@
 
       if(DebateTools.getSetting("usePilcrows")) blocks.forEach((el) => {
         const pilcrow = document.createElement("span");
-        pilcrow.innerText = " ¶ ";
+        pilcrow.innerText = "¶";
         pilcrow.style.color = "#777";
 
-        if (el.tagName !== "BR") {
-          el.appendChild(pilcrow);
-        } else {
+        if (el.tagName === "BR") {
           el.parentNode.insertBefore(pilcrow, el);
           el.remove();
         }

@@ -184,10 +184,10 @@
       </div>
       <div class="sidebar-control-grid">
         <div class="sidebar-button-grid">
-
         <button class="side-btn" data-action="Paste" title="Paste clipboard contents without formatting"><span class="side-btn-label">Paste</span><span class="side-btn-keybind">${DebateTools.getSetting("Paste")}</span></button>
         <button class="side-btn" data-action="Condense" title="Condense selected text into a tighter card paragraph, removing breaks and whitespace"><span class="side-btn-label">Condense</span><span class="side-btn-keybind">${DebateTools.getSetting("Condense")}</span></button>
-        <button class="side-btn" data-action="Pocket" title="Format selected text as a pocket heading"><span class="side-btn-label">Pocket</span><span class="side-btn-keybind">${DebateTools.getSetting("Pocket")}</span></button>
+        <button class="side-btn" data-action="Analytic" title="Apply analytic formatting"><span class="side-btn-label">Analytic</span><span class="side-btn-keybind">${DebateTools.getSetting("Analytic")}</span></button>
+        <button class="side-btn" data-action="Pocket" title="Format selected text as a pocket heading"><span class="side-btn-label">Pocket</span></button>
         <button class="side-btn" data-action="Hat" title="Format selected text as a hat heading"><span class="side-btn-label">Hat</span><span class="side-btn-keybind">${DebateTools.getSetting("Hat")}</span></button>
         <button class="side-btn" data-action="Block" title="Format selected text as a block heading"><span class="side-btn-label">Block</span><span class="side-btn-keybind">${DebateTools.getSetting("Block")}</span></button>
         <button class="side-btn" data-action="Tag" title="Format selected text as a tag heading"><span class="side-btn-label">Tag</span><span class="side-btn-keybind">${DebateTools.getSetting("Tag")}</span></button>
@@ -203,7 +203,7 @@
           <option value="red">🟥️</option>
           </select>
         </button>
-        <button class="side-btn" data-action="Clear" title="Clear formatting from the selected text"><span class="side-btn-label">Clear</span><span class="side-btn-keybind">${DebateTools.getSetting("Clear")}</span></button>
+        <button class="side-btn" data-action="Clear" title="Clear formatting and/or convert to normal text"><span class="side-btn-label">Clear</span><span class="side-btn-keybind">${DebateTools.getSetting("Analytic")}</span></button>
         <button class="side-btn" data-action="Shrink" title="Reduce non underlined text size, cycling back when it gets too small">Shrink</button>
         <details class="more-features-dropdown">
           <summary class="side-btn" title="Document cleanup and formatting tools">Doc Tools v</summary>
@@ -260,7 +260,7 @@
         <details class="settings-detail" id="keybindsFormat"><summary><span>Formatting Keybinds</span><button id="settings-default" type="button" title="Restore the default formatting keybinds">Reset Default</button></summary>
             <label class="settings-row">Paste<select name="Paste"><option value="Not Selected">Not Selected</option></select></label>
             <label class="settings-row">Condense<select name="Condense"><option value="Not Selected">Not Selected</option></select></label>
-            <label class="settings-row">Pocket<select name="Pocket"><option value="Not Selected">Not Selected</option></select></label>
+            <label class="settings-row">Analytic<select name="Analytic"><option value="Not Selected">Not Selected</option></select></label>
             <label class="settings-row">Hat<select name="Hat"><option value="Not Selected">Not Selected</option></select></label>
             <label class="settings-row">Block<select name="Block"><option value="Not Selected">Not Selected</option></select></label>
             <label class="settings-row">Tag<select name="Tag"><option value="Not Selected">Not Selected</option></select></label>
@@ -440,6 +440,7 @@
           border-color: transparent;
         }
         .action-menu-dropdown {
+          position: relative;
           border-left: 1px solid #dfe5ef;
         }
         .action-menu-dropdown summary {
@@ -490,9 +491,9 @@
           position: relative;
         }
         .more-features-dropdown .action-menu-list {
-          left: 0;
-          right: auto;
-          width: calc(200% + 8px);
+          right: 0;
+          left: auto;
+          width: 180px;
           box-sizing: border-box;
         }
         .more-features-dropdown summary::-webkit-details-marker {
@@ -562,7 +563,7 @@
           top: 72px;
           right: 12px;
           box-sizing: border-box;
-          padding: 12px;
+          padding: 0 12px 12px 12px;
           border: 1px solid #c9d1d9;
           border-radius: 6px;
           background: white;
@@ -577,10 +578,17 @@
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 10px;
+          margin: -12px -12px 12px -12px;
+          position: sticky;
+          top: 0;
+          background: white;
+          z-index: 10;
+          padding: 8px 12px;
+          border-bottom: 1px solid #e0e6f0;
         }
         .settings-header b {
           font-size: 17px;
+          font-weight: bold;
         }
         #settings-close {
           width: 24px;
@@ -596,6 +604,7 @@
         }
         .settings-detail {
           font-size: 13px;
+          font-weight: 600;
         }
         .settings-detail summary {
           display: flex;
@@ -625,6 +634,7 @@
           gap: 10px;
           padding: 7px 0;
           border-top: 1px solid #f0f2f5;
+          font-weight: 400;
         }
     </style>  
     `;

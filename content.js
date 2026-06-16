@@ -15,7 +15,7 @@
     userFormat: "hspolicy",
     Paste: "F2",
     Condense: "F3",
-    Pocket: "F4",
+    Analytic: "F4",
     Hat: "F5",
     Block: "F6",
     Tag: "F7",
@@ -30,7 +30,7 @@
     h2Size: "22",
     h3Size: "16",
     h4Size: "13",
-    fillerFlowWords: "links:lx,the: ,topicality:T"
+    fillerFlowWords: "links:lx,the : ,topicality:T"
   }
 
   DebateTools.loadSettings = function loadSettings() {
@@ -71,6 +71,7 @@
     red: "docs-material-colorpalette-cell-101",
   }
   DebateTools.actions = {
+    Analytic: async () => await DebateTools.clickHeader("Apply 'Subtitle' a"),
     Paste: async () => await DebateTools.clickDocsMenuShortcut("Ctrl+Shift+V"),
     Condense: async () => await DebateTools.condense(),
     Pocket: async () => await DebateTools.clickHeader("Ctrl+Alt+1"),
@@ -118,7 +119,7 @@
   DebateTools.keybinds = {
     SendSpeechDoc: "`"
   };
-  DebateTools.bindableActions = ["Paste", "Condense", "Pocket", "Hat", "Block", "Tag", "Cite", "Underline", "Emphasis", "Highlight", "Clear"];
+  DebateTools.bindableActions = ["Paste", "Condense", "Hat", "Block", "Tag", "Cite", "Underline", "Emphasis", "Highlight", "Analytic", "Clear"];
   DebateTools.bindableActions.forEach(action => {
     DebateTools.keybinds[action] = DebateTools.getSetting(action) || "Not Selected";
   });
@@ -202,6 +203,12 @@
   });
 
   initObserver.observe(document.body, { childList: true, subtree: true });
+
+  if(localStorage.getItem("userHasLoadedDebateTools") !== "true") {
+    localStorage.setItem("userHasLoadedDebateTools", "true");
+    alert("Welcome to CardFlow V1.0! All settings can be configured in the settings tab of the extension, and if you have any issues, suggestions or questions email the developer or file at https://github.com/joeassal/debate-tools/issues. Enjoy!");
+    DebateTools.formatHeaderStyles();
+  }
 
   global.DebateTools = DebateTools;
 })(window);
