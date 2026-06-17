@@ -180,6 +180,7 @@
           return await blob.text();
         }
       }
+      return await navigator.clipboard.readText();
     } catch (e) {
       // Permission blocked or unsupported context.
     }
@@ -196,7 +197,13 @@
   DebateTools.getSelection = async function getSelection(html=false) {
     const startCB2 = await navigator.clipboard.read()
     await DebateTools.clickDocsMenuShortcut("Ctrl+C")
-    const CB = await DebateTools.checkClipboard();
+    await DebateTools.sleep(100);
+    let CB = await DebateTools.checkClipboard();
+    if (!CB) {
+      await DebateTools.sleep(100);
+      CB = await DebateTools.checkClipboard();
+    }
+    console.log(CB)
     await navigator.clipboard.write(startCB2);
     if(html) {
       const container=document.createElement("div")
@@ -363,6 +370,7 @@
 
     await DebateTools.clickDocsMenuShortcut("Ctrl+A")
     await DebateTools.clickDocsMenuShortcut("Ctrl+C")
+    await DebateTools.sleep(100);
 
     const newCB = await DebateTools.checkClipboard();
     if (startCB == newCB) {
@@ -377,6 +385,7 @@
     if(!DebateTools.getSetting("cutTextReadMode")) return container.innerHTML
 
     const pgs = container.querySelector("b");
+    if (!pgs) return container.innerHTML;
     return [...pgs.children].map(getTrimmedReadModeParagraph).join("");
   };
   DebateTools.ensureDocshiftLoaded = async function ensureDocshiftLoaded() {
@@ -512,14 +521,14 @@
         else final+=`${pgTexts.slice(0,25).join(" ")} \n AND \n \n ${pgTexts.slice(-25).join(" ")}\n`;
     }
     alert("Wikified content copied to clipboard");
-    navigator.clipboard.writeText(final);      
+    await navigator.clipboard.writeText(final);      
   };
 
 
 
   DebateTools.openCaselist = async () => {
     const parts=DebateTools.getSetting("userName").trim().split(" ")
-    const caseListUrl = `https://opencaselist.com/${DebateTools.getSetting("userFormat") + "25"}/${DebateTools.getSetting("userSchool")}/${parts[0].slice(0, 2)+parts[parts.length - 1].slice(0, 2)}/add`;
+    const caseListUrl = `https://opencaselist.com/${DebateTools.getSetting("userFormat") + DebateTools.getSetting("userYear")}/${DebateTools.getSetting("userSchool")}/${parts[0].slice(0, 2)+parts[parts.length - 1].slice(0, 2)}/add`;
     await chrome.runtime.sendMessage({ action: "openCleanCaseList", url: caseListUrl });
   }
 
@@ -574,7 +583,7 @@
     return text
   }
   DebateTools.sendToFlow = async () => {
-    chrome.runtime.sendMessage({ action: "openSidePanel" });
+    await chrome.runtime.sendMessage({ action: "openSidePanel" });
     const startCB2 = await navigator.clipboard.read();
     await DebateTools.clickDocsMenuShortcut("Ctrl+C")
     const selection = await navigator.clipboard.readText()
@@ -590,11 +599,13 @@
 
   DebateTools.ExtrapolateToFlow = async (sendAll=true) => {
     await DebateTools.clickDocsMenuShortcut("Ctrl+A")
+    await DebateTools.sleep(50);
     const container = await DebateTools.getSelection(true)
-    chrome.runtime.sendMessage({ action: "openSidePanel" });
+    await chrome.runtime.sendMessage({ action: "openSidePanel" });
 
     let cells=[]
     const pgs = container.querySelector("b")
+    // console.log(container)
     for (const pg of pgs.children) {
       if(pg.tagName.includes("H")) {
         // if(Integer.parseInt(pg.tagName)>1) {
@@ -611,7 +622,7 @@
             cells.push(replaceFiller(span.innerText))
             cells.push("")
           } else if(span.style.fontWeight>400 && !hasHighlight && (parseInt(span.style.fontSize)>=13 || span.innerText.includes("https") || span.innerText.includes("www."))) {
-            kc += span.innerText
+            kc += span.innerText + " "
           }
         })
         if(kc!="") {

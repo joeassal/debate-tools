@@ -308,6 +308,7 @@
             </select></label>
             <label class="settings-row">School Name on Wiki<input name="userSchool"></label>
             <label class="settings-row">Full Name<input name="userName"></label>
+            <label class="settings-row">Year<input name="userYear"></label>
         </details>
         <details class="settings-detail" id="Caselist"><summary><span>Sidebar</span></summary>
             <label class="settings-row">Sidebar Color Theme (refresh for changes)<input type="color" name="colorTheme"></label>

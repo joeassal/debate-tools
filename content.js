@@ -14,6 +14,7 @@
     userName: "",
     userSchool: "",
     userFormat: "hspolicy",
+    userYear: new Date().getFullYear().toString().slice(-2),
     Paste: "F2",
     Condense: "F3",
     Analytic: "F4",
@@ -99,8 +100,18 @@
     ImportdocxToClipboard: async () => await DebateTools.ImportDocXtoClipboard(),
     Exportdocx: async () => await DebateTools.ExportDocX(),
     Exportpdf: () => DebateTools.ExportPDF(),
-    SendSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "sendSpeechDoc" }, (response) => {if(response && !response.success) { alert(response.message); }}),
-    NewSpeechDoc: async () => await chrome.runtime.sendMessage({ action: "newSpeechDoc", newWindow: DebateTools.getSetting("speechDocNewWindow") }, (response) => {if(response && !response.success) { alert(response.message); }}),
+    SendSpeechDoc: async () => {
+      const response = await chrome.runtime.sendMessage({ action: "sendSpeechDoc" });
+      if (response && !response.success) {
+        alert(response.message);
+      }
+    },
+    NewSpeechDoc: async () => {
+      const response = await chrome.runtime.sendMessage({ action: "newSpeechDoc", newWindow: DebateTools.getSetting("speechDocNewWindow") });
+      if (response && !response.success) {
+        alert(response.message);
+      }
+    },
     SelectSpeechDoc: async () => await DebateTools.selectSpeechDoc(),
     Shrink: async () => await DebateTools.shrink(),
     Email: async () => await DebateTools.clickDocsMenuShortcut("Email this file a"),
