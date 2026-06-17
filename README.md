@@ -18,7 +18,7 @@ Once you open the sidebar the first thing you should do is setup the custom styl
 The first section of tools are for formatting. Use these to easily format cards and organize your  blocks. For more help / information on how to use each tool, check out the manual, or hover over the button to see a description.
 #### 
 ## Changelog
-v1.0 - inception
-
+v1.0.0 - inception
+v1.0.1 - added analytic feature with ability to delete all analytics, added changable color theming, fixed ui and flow bugs
 
 
